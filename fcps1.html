@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BCPS</title>
+
+<!-- BCPS CSS -->
+<link href="bootstrap.css" rel="stylesheet">
+<link href="jquery.bootgrid.css" rel="stylesheet">
+<link href="jquery.steps.css" rel="stylesheet">
+<link href="datepicker3.css" rel="stylesheet">
+<link href="site.css" rel="stylesheet">
+
+<style>
+.navbar-inverse .navbar-brand {
+    color: #fff;
+}
+.navbar-inverse {
+    background-color: #5575BB !important;
+}
+.navbar-inverse .navbar-nav > li > a {
+    color: #ccd;
+    font-weight: bold;
+}
+</style>
+
+<script>
+/* Login protection */
+if (!localStorage.getItem("isLoggedIn")) {
+    window.location.href = "BCPS2.html";
+}
+</script>
+</head>
+
+<body>
+
+<!-- Navbar -->
+<div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">BCPS Online Registration System</a>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container body-content main-content" style="margin-top:80px;">
+    <div align="center">
+        <h3>FCPS-I Program</h3>
+        <br>
+
+        <div class="well" style="max-width: 500px; margin: 0 auto;">
+            <div style="text-align:center;">
+
+    <!-- Examination Title -->
+<h3 style="color:#1f3fd1; font-weight:600; text-align:center;">
+    Examination : January - 2026
+</h3>
+
+<hr style="border-top:1px solid #ddd;">
+
+<!-- Exam Name -->
+<p style="color:#2e7d32; font-weight:600; text-align:left; font-size:16px;">
+    Exam Name : FCPS-PART-I
+</p>
+
+<hr style="border-top:1px solid #ddd;">
+
+<!-- Result Details -->
+<div style="margin-top:20px; font-size:15px;">
+
+    <div style="display:flex; margin-bottom:6px;">
+        <div style="width:120px; color:#555;">ROLL</div>
+        <div style="color:#333;">280214</div>
+    </div>
+
+    <div style="display:flex; margin-bottom:6px;">
+        <div style="width:120px; color:#555;">NAME</div>
+        <div style="color:#333;">MD.RAQUIBUL ALAM</div>
+    </div>
+
+    <div style="display:flex; margin-bottom:6px;">
+        <div style="width:120px; color:#555;">SUBJECT</div>
+        <div style="color:#333;">Neurology</div>
+    </div>
+
+    <div style="display:flex; margin-bottom:6px;">
+        <div style="width:120px; color:#555;">RESULT</div>
+        <div style="color:#2e7d32; font-weight:600;">Pass</div>
+    </div>
+
+</div>
+
+<hr style="border-top:1px solid #ddd; margin-top:25px;">
+
+<!-- DO NOT CHANGE BELOW -->
+<p style="color:#444; margin-top:20px; line-height:1.6; text-align:right;">
+    Professor Imtiaz Faruk<br>
+    Controller of Examinations(In charge)
+</p>
+
+
+</div>
+
+
+            <br>
+            <button type="button"
+                class="btn btn-default btn-lg btn-block"
+                style="color:#5575BB"
+                onclick="window.location.href='program.html'">
+                Back 
+            </button>
+        </div>
+    </div>
+</div>
+
+<hr>
+
+<!-- Footer -->
+<footer class="text-center">
+    <p>© 2026 - BCPS</p>
+</footer>
+
+<!-- JS (optional but matches BCPS structure) -->
+<script src="jquery-2.1.1.js"></script>
+<script src="bootstrap.js"></script>
+<script src="respond.js"></script>
+
+</body>
+</html>

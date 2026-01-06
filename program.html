@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BCPS</title>
+
+<link href="bootstrap.css" rel="stylesheet">
+<link href="jquery.bootgrid.css" rel="stylesheet">
+<link href="jquery.steps.css" rel="stylesheet">
+<link href="datepicker3.css" rel="stylesheet">
+<link href="site.css" rel="stylesheet">
+
+<style>
+.navbar-inverse .navbar-brand {
+    color: #fff;
+}
+.navbar-inverse {
+    background-color: #5575BB !important;
+}
+.navbar-inverse .navbar-nav > li > a {
+    color: #ccd;
+    font-weight: bold;
+}
+</style>
+
+<script>
+if (!localStorage.getItem("isLoggedIn")) {
+    window.location.href = "BCPS2.html";
+}
+</script>
+</head>
+
+
+<body>
+
+<div class="navbar navbar-inverse">
+  <div class="container">
+    <a class="navbar-brand" href="#">BCPS Online Registration System</a>
+  </div>
+</div>
+
+<div class="container text-center" style="margin-top:50px;">
+    <h3>Select Program Type</h3>
+    <br>
+    <button class="btn btn-primary btn-lg"
+        onclick="window.location.href='fcps1.html'">
+        FCPS-I Program
+    </button>
+</div>
+
+<footer class="text-center" style="margin-top:80px;">
+    <p>© 2026 - BCPS</p>
+</footer>
+
+</body>
+</html>

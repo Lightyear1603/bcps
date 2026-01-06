@@ -1,0 +1,97 @@
+﻿body {
+    padding-top: 50px;
+    padding-bottom: 20px;
+}
+
+/* Set padding to keep content from hitting the edges */
+.body-content {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* Override the default bootstrap behavior where horizontal description lists 
+   will truncate terms that are too long to fit in the left column 
+*/
+.dl-horizontal dt {
+    white-space: normal;
+}
+
+/* Set width on the form input elements since they're 100% wide by default */
+input,
+select,
+textarea {
+    max-width: 280px;
+}
+
+.application-status > input {
+    float: left;
+    margin-right: 5px;
+}
+
+.address {
+    margin-left: 23.598%;
+}
+
+.main-content {
+    padding-top: 29px;
+}
+
+.old-student, .new-student {
+    margin-top: 5%;
+    display: none;
+}
+
+.form-control {
+    height: auto;
+}
+
+.trainingRecord {
+    margin-bottom: 10px;
+}
+
+table#mcpsTrainingRecord tr td {
+    padding-right: 6px;
+}
+
+.responsive {
+    width: auto;
+}
+
+#AgreementStatus {
+    margin-top: 20px;
+}
+
+form#registration div.steps ul li {
+    width: 14.28%;
+}
+
+#OtherCollege {
+    margin-top: 10px;
+}
+
+.extraCollege {
+    display: none;
+}
+
+.space {
+    margin-right: 20px;
+}
+
+.make-difference {
+    margin-top: 100px;
+}
+
+.warning-label {
+    font-size: 12px;
+    color:#a94442
+}
+
+img.main-logo-img {
+    width: auto;
+    height: auto;
+}
+
+img {
+    width: 100px;
+    height: 100px;
+}

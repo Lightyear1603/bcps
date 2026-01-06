@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<!-- saved from url=(0026)https://exams.bcps.edu.bd/ -->
+<html style="" class=" js flexbox flexboxlegacy canvas canvastext webgl no-touch geolocation postmessage no-websqldatabase indexeddb hashchange history draganddrop websockets rgba hsla multiplebgs backgroundsize borderimage borderradius boxshadow textshadow opacity cssanimations csscolumns cssgradients cssreflections csstransforms csstransforms3d csstransitions fontface generatedcontent video audio localstorage sessionstorage webworkers no-applicationcache svg inlinesvg smil svgclippaths"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BCPS</title>
+    <link href="./BCPS_files/css2" rel="stylesheet">
+    <link href="./BCPS_files/css2(1)" rel="stylesheet">
+    <link href="./BCPS_files/bootstrap.css" rel="stylesheet">
+<link href="./BCPS_files/jquery.bootgrid.css" rel="stylesheet">
+<link href="./BCPS_files/jquery.steps.css" rel="stylesheet">
+<link href="./BCPS_files/datepicker3.css" rel="stylesheet">
+<link href="./BCPS_files/site.css" rel="stylesheet">
+
+    <script async="" src="./BCPS_files/analytics.js.download"></script><script src="./BCPS_files/modernizr-2.8.3.js.download"></script>
+
+    <style>
+        .navbar-inverse .navbar-brand {
+            color: #fff;
+        }
+        .navbar-inverse {
+            background-color: #5575BB !important;
+            border-color: none !important; 
+        }
+        .navbar-inverse .navbar-nav > li > a {
+            color: #ccd;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body data-new-gr-c-s-check-loaded="14.1267.0" data-gr-ext-installed="">
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="https://exams.bcps.edu.bd/Home/Index">BCPS Online Registration System</a>
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav pull-right">
+
+    <ul class="nav navbar-nav navbar-right">
+        <li><a href="https://exams.bcps.edu.bd/Account/Register" id="registerLink">Register</a></li>
+        <li><a href="https://exams.bcps.edu.bd/Account/Login" id="loginLink">Log in</a></li>
+    </ul>
+
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="container body-content main-content">
+        
+
+
+<style>
+    body {
+        background:#ecebcd !important;
+        font-family: 'Open Sans', sans-serif !important;
+    }
+</style>
+ <img class="main-logo-img" src="./BCPS_files/logo.png">
+<div align="center" class="text-center">
+<h2>Welcome to BCPS Online Registration System</h2>
+<p class="text-justify">
+    Bangladesh College of Physicians and Surgeons has been the pioneer in developing post-graduate medical education in this country. Historically, the College bears a heritage to College of Physicians and Surgeons of Pakistan of which it was the eastern wing. Following the independence of Bangladesh, the College was recreated as a statutory body by a Presidential order, later on ratified by an act of the parliament, to steer postgraduate medical education of a vastly populated, poorly resourced and war ravaged country. With the grace of Almighty and under an ever-unfolding leadership of its fellows, the College has achieved the iconic status in the field of postgraduate medical education of this country. It has definitely been able to set a mark for others to cherish and chase.
+</p>
+    </div>
+<br>
+<div align="center">
+    <div class="well" style="max-width: 400px; margin: 0 auto 10px;">
+      <button type="button" class="btn btn-default btn-lg btn-block"
+        style="color: #5575BB"
+        onclick="window.location.href='login.html'">
+    Login
+</button>
+      <button type="button" class="btn btn-default btn-lg btn-block" style="color: #5575BB" onclick="window.location.href=&#39;/Account/Register&#39;">Register</button> 
+      <button type="button" class="btn btn-default btn-lg btn-block" style="color: #5575BB" onclick="window.location.href=&#39;/DownloadRegistrationSlip/Index&#39;">Download Registration Slip</button>
+        
+    </div>
+</div>
+        <hr>
+        <footer>
+            <p>© 2026 - BCPS</p>
+        </footer>
+    </div>
+
+    <script src="./BCPS_files/jquery-2.1.1.js.download"></script>
+<script src="./BCPS_files/jquery.validate.js.download"></script>
+<script src="./BCPS_files/jquery.validate.unobtrusive.js.download"></script>
+<script src="./BCPS_files/bootstrap.js.download"></script>
+<script src="./BCPS_files/jquery.bootgrid.js.download"></script>
+<script src="./BCPS_files/jquery.steps.js.download"></script>
+<script src="./BCPS_files/bootstrap-datepicker.js.download"></script>
+<script src="./BCPS_files/respond.js.download"></script>
+
+    <script src="./BCPS_files/sharedService.js.download"></script>
+<script src="./BCPS_files/app.js.download"></script>
+
+    <script>
+        $(function () {
+            $.validator.addMethod(
+                "date",
+                function (value, element) {
+
+                    var minDate = Date.parse("1900-01-01");
+                    var maxDate = Date.parse("2100-01-01");
+                    var enteredDateString = value.split('/');
+                    var valueEntered = Date.parse(enteredDateString[2], enteredDateString[1] - 1, enteredDateString[0]);
+
+                    if (valueEntered < minDate || valueEntered > maxDate) {
+                        return false;
+                    }
+                    return true;// !/Invalid|NaN/.test(new Date(valueEntered));
+                },
+                "Please enter a valid date!"
+            );
+        });
+    </script>
+        
+        <script>
+            (function (i, s, o, g, r, a, m) {
+                i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+                    (i[r].q = i[r].q || []).push(arguments)
+                }, i[r].l = 1 * new Date(); a = s.createElement(o),
+                m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+            })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+            ga('create', 'UA-69873010-1', 'auto');
+            ga('send', 'pageview');
+
+        </script>
+
+</body><grammarly-desktop-integration data-grammarly-shadow-root="true"><template shadowrootmode="open"><style>
+      div.grammarly-desktop-integration {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+        -moz-user-select: none;
+        -webkit-user-select: none;
+        -ms-user-select:none;
+        user-select:none;
+      }
+
+      div.grammarly-desktop-integration:before {
+        content: attr(data-content);
+      }
+    </style><div aria-label="grammarly-integration" role="group" tabindex="-1" class="grammarly-desktop-integration" data-content="{&quot;mode&quot;:&quot;full&quot;,&quot;isActive&quot;:true,&quot;isUserDisabled&quot;:false}"></div></template></grammarly-desktop-integration></html>
