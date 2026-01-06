@@ -1,0 +1,18 @@
+﻿var SharedService = function () { };
+
+SharedService.prototype = function () {
+    var ajaxCall = function (url, method, formData) {
+        return $.ajax({
+            url: url,
+            type: method || "GET",
+            data: formData,
+            async: false,
+            dataType: "json",
+            contentType: "application/json; charset=utf-8"
+        }).promise();
+    };
+
+    return {
+        ajaxCall: ajaxCall
+    };
+}();
