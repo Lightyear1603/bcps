@@ -1,0 +1,3232 @@
+﻿(function ($) {
+
+    $(document).on("keypress", function (e) {
+        //if (e.which === 13) {
+        //    e.preventDefault();
+        //}
+        if (e.which === 13 && !$(e.target).is("textarea")) {
+
+            e.preventDefault();
+        }
+    });
+
+    var CandidateType = {
+        Fcps1: 1,
+        Fcps2: 2,
+        PreliFcps2: 3,
+        Fcps2Special: 4,
+        Mcps: 5,
+        MidtermFcps: 6,
+        FcpsFinal: 7
+    };
+
+    $(document).ready(function () { // FF needs keypress, IE needs keydown
+        $('select').keypress(function (event) {
+
+            return cancelBackspace(event);
+        });
+        $('select').keydown(function (event) {
+
+            return cancelBackspace(event);
+        });
+        $('select').focus(function (event) {
+            return cancelBackspace(event);
+        });
+    }); // ready
+
+    function cancelBackspace(event) {
+        if (event.keyCode == 8) {
+            return false;
+        }
+    }
+    $(document).on("keydown", function (e) {
+        if (e.which === 8 && !$(e.target).is("input, textarea")) {
+
+            e.preventDefault();
+        }
+
+    });
+    $(document).keydown(function (e) {
+        if (e.keyCode === 8 && $('input[type=radio]:focus').size() > 0) {
+            return false;
+        }
+    });
+
+    //$('input[type=radio]').click(function () {
+    //    $(this).focus();
+    //});
+
+
+    var govcode = $('#GovrmentEmployeeCodeNumberField');
+    var otherCollege = $('#OtherCollege');
+    $('.old-studentNoSubChange').hide();
+    $('#dvMBBSCertificate').hide();
+    $('#dvBMDCCertificate').hide();
+    $('#divPassingDocFCPS1').hide();
+
+    var sharedService = new SharedService();
+
+    otherCollege.hide();
+    govcode.hide();
+
+    $("#wizard").steps({
+        onStepChanging: function (event, currentIndex, newIndex) {
+            if (newIndex > currentIndex) {
+                $('#registration').validate().settings.ignore = ":disabled,:hidden";
+                var validation = true;
+                var isItValid = true;
+        
+                if (currentIndex === 0) { // Applicant Status
+                    var value = $('input:radio[name="ApplicantStatus"]:checked').val();
+                    var programType = $('#EnrollerTypeId').val();
+
+                    if (value == 1) { // Old Student
+                        $('#new-student').html('');
+                        //$('#MoneyReceipt_Amount').val('11000');
+                        $.ajax({
+                            type: "Get",
+                            url: "/Base/FeeAmountFCPS1",
+                            data: { programType: value },
+                            contentType: "application/json; charset=utf-8",
+                            dataType: "json",
+                            success: successFunc
+                        });
+
+                        sharedService.ajaxCall("/Base/IsTimeForProgram", "GET", { programType: 2 }).then(function (data) {
+                            validation = data.Eligibility;
+                            if (validation) {
+                                $('#Old-student-FCPS-1').html('');
+                                if ($('#PenOrMenOrSen').val() == "") {
+                                    $('#PenOrMenOrSenRequiredMessage').html('Please Enter Pen/Men/Sen No. to Proceed');
+                                    validation = false;
+                                }
+                                else {
+                                    if (validation) {
+                                        var obj = $('input:radio[name="isChangeSubject"]:checked').val();
+                                        if (obj == 1) {
+                                            if ($('#AdditionalEnrollerFCPS1_OldSpecialityId').val() == null ||
+                                                $('#AdditionalEnrollerFCPS1_OldSpecialityId').val() == undefined ||
+                                                $('#AdditionalEnrollerFCPS1_OldSpecialityId').val() == '') {
+                                                validation = false;
+                                                $('#OldSpecialityId').html('Previous Subject is Required.');
+                                            }
+                                            else
+                                                $('#OldSpecialityId').html('');
+                                        }
+                                        else if (obj == 2) {
+                                            if ($('#AdditionalEnrollerFCPS1_OldPassedSpecialityId').val() == '' ||
+                                                $('#AdditionalEnrollerFCPS1_OldRoll').val() == '' ||
+                                                $('#AdditionalEnrollerFCPS1_OldYear').val() == '' ||
+                                                $('#AdditionalEnrollerFCPS1_OldSession').val() == '') {
+                                                validation = false;
+                                                $('#OldPassedSpecialityId').html('Previous Passed Subject is Required.');
+                                                $('#OldRoll').html('Previous Roll is Required.');
+                                                $('#OldYear').html('Previous Year is Required.');
+                                                $('#OldSession').html('Previous Session is Required.');
+                                            }
+                                            else {
+                                                $('#OldPassedSpecialityId').html('');
+                                                $('#OldRoll').html('');
+                                                $('#OldYear').html('');
+                                                $('#OldSession').html('');
+                                            }
+                                        }
+                                    }
+                                }
+                            } else {
+                                $('#Old-student-FCPS-1').html('Sorry, You can not register for exam now. ' + data.Message);
+                            }
+                        });
+
+
+                    }
+                    else if (value == 2) { // New Student
+                        sharedService.ajaxCall("/Base/IsTimeForProgram", "GET", { programType: 1 }).then(function (data) {
+                            validation = data.Eligibility;
+                            //$('#MoneyReceipt_Amount').val('11000');
+                            $.ajax({
+                                type: "Get",
+                                url: "/Base/FeeAmountFCPS1",
+                                data: { programType: value },
+                                contentType: "application/json; charset=utf-8",
+                                dataType: "json",
+                                success: successFunc
+
+                            });
+                            if (validation)
+                                $('#new-student').html('');
+                            else {
+                                $('#new-student').html('Sorry, You can not register for exam now. ' + data.Message);
+                            }
+                        });
+                    }
+                    else if (value == 3) { // Old Student
+                        $('#new-student').html('');
+                        //$('#MoneyReceipt_Amount').val('10000');
+                        //================
+                        $.ajax({
+                            type: "Get",
+                            url: "/Base/FeeAmountFCPS1",
+                            data: { programType: value },
+                            contentType: "application/json; charset=utf-8",
+                            dataType: "json",
+                            success: successFunc
+                        });
+
+                        sharedService.ajaxCall("/Base/IsTimeForProgram", "GET", { programType: 2 }).then(function (data) {
+                            validation = data.Eligibility;
+                            if (validation) {
+                                $('#Old-student-FCPS-1').html('');
+                                if ($('#PenOrMenOrSen').val() == "") {
+                                    $('#PenOrMenOrSenRequiredMessage').html('Please Enter Pen/Men/Sen No. to Proceed');
+                                    validation = false;
+                                }
+                            } else {
+                                $('#Old-student-FCPS-1').html('Sorry, You can not register for exam now. ' + data.Message);
+                            }
+                        });
+                    }
+
+                    function successFunc(data) {
+                        $('#MoneyReceipt_Amount').val(data);
+                    }
+                    if (programType == '1') {
+                        var bmdcNumber = $('#BMDCRegistrationNumber').val();
+                        var regularExpression = GetRegularExpression(); //new RegExp(
+
+                        for (i = 0; i < regularExpression.length; i++) {
+                            var regex = new RegExp(regularExpression[i]);
+                            isItValid = regex.test(bmdcNumber);
+                            if (isItValid === true) { break; }
+                        }
+
+                        if (!isItValid) {
+                            $('#BMDCRegistrationValidationError').html('Invalid BMDC Number. It must not contain any space or special characters and it must start with a prefix');
+                        }
+                        else {
+                            $('#BMDCRegistrationValidationError').html('');
+                        }
+
+                    } else {
+                        var regularExpression = /^\d+$/;
+                        var bmdcNumber = $('#BMDCRegistrationNumber').val();
+                        isItValid = regularExpression.test(bmdcNumber);
+                        if (!isItValid) {
+                            $('#BMDCRegistrationValidationError').html('Invalid BMDC Number. It must not contain any space or special characters.');
+
+                        } else {
+                            $('#BMDCRegistrationValidationError').html('');
+                        }
+
+                    }
+                    var bMdcRegistrationNumberError = isBMDCNumberExists($('#BMDCRegistrationNumber').val(), $("#EnrollerTypeId").val());
+
+                    if (!bMdcRegistrationNumberError) {
+                        $('#BMDCRegistrationError').html('BMDC Registration Number already exists. Please <a href="/Account/Login">Login </a> with your account.');
+                    } else {
+                        $('#BMDCRegistrationError').html('');
+
+                    }
+
+                    validation = bMdcRegistrationNumberError && isItValid && validation;
+
+                }
+                else if (currentIndex === 1) { // Academic Identity
+                    var passingDateError = passingDurationDMY($("#PassingDate").val()) >= 365;
+                    //var bMdcRegistrationNumberError = isBMDCNumberExists($('#BMDCRegistrationNumber').val());
+                    var barred = isBarredStudent($('#BMDCRegistrationNumber').val());
+                    validation = passingDateError;
+
+                    if (!barred) {
+                        $('#BarredError').html('This BMDC number has been barred from registration. Please contact BCPS Administration');
+                        validation = false;
+                    } else {
+                        $('#BarredError').html('');
+                    }
+
+
+
+                    if (!passingDateError) {
+                        $('#PassingDateError').html('You have to complete 1 year after passing MBBS/BDS to register.');
+                    } else {
+                        $('#PassingDateError').html('');
+                    }
+
+                    if (validation) {
+                        if ($('input:radio[name="ApplicantStatus"]:checked').val() == 2) {
+                            ////Check Certificates/////
+                            var mbbsCertificateError = checkImage($('#MBBSCertificate'));
+                            var bmdcCertificateError = checkImage($('#BMDCCertificate'));
+                            if (!mbbsCertificateError) {
+                                $('#MBBSCertificateError').html('MBBS/BDS Certificate is Reqiured.');
+                            }
+                            else
+                                $('#MBBSCertificateError').html('');
+                            if (!bmdcCertificateError) {
+                                $('#BMDCCertificateError').html('BMDC Certificate is Reqiured.');
+                            }
+                            else
+                                $('#BMDCCertificateError').html('');
+                            validation = mbbsCertificateError && bmdcCertificateError;
+                            var isUploadedPicConfirmed = $("#isOfRightSizeStep2").is(':checked') && $("#isOfProperPositionStep2").is(':checked');
+
+                            if (!isUploadedPicConfirmed) {
+                                validation = false;
+                                $('#ConfirmationErrorStep2').removeClass('hide');
+                            }
+
+                            if (!validation) {
+                                validation = false;
+                            } else {
+
+                            }
+                        }
+
+                    }
+                }
+                else if (currentIndex == 2) { // Exam Information
+
+                    //validation = checkImage($('input[name="moneyReceiptImage"]'));
+                    //if (!validation)
+                    //    $('#MoneyReceiptUrlError').html('Money Receipt is required.');
+                    //else {
+                    //    $('#MoneyReceiptUrlError').html('');
+                    //}
+                    //var isUploadedPicConfirmed = $("#isOfRightSizeStep3").is(':checked') && $("#isOfProperPositionStep3").is(':checked');
+
+                    //if (!isUploadedPicConfirmed) {
+                    //    validation = false;
+                    //    $('#ConfirmationErrorStep3').removeClass('hide');
+                    //}
+                }
+                else if (currentIndex === 3) { // Employment Identity
+                    var employeeType = $('#EmploymentTypeId').val();
+                    if (employeeType === "1") {
+                        if (!$('.GovrmentEmployeeCodeNumber').val().trim().length) {
+                            $("#GovrmentEmployeeCodeNumberError").html("Goverment Employee Code Number is required.");
+                            validation = false;
+                        } else {
+                            $("#GovrmentEmployeeCodeNumberError").html("");
+                        }
+                    }
+
+                }
+                else if (currentIndex === 4) {
+                    var isUploadedPicConfirmed = $("#isOfRightSizeStep5").is(':checked') && $("#isOfProperPositionStep5").is(':checked');
+
+                    if (!isUploadedPicConfirmed) {
+                        validation = false;
+                        $('#ConfirmationErrorStep5').removeClass('hide');
+                    }
+                }
+                else if (currentIndex === 6) {
+                    var paymentType = $('#PaymentTypeId').val();
+                    if (paymentType === "1") {
+                        validation = checkImage($('input[name="moneyReceiptImage"]'));
+                        if (!validation)
+                            $('#MoneyReceiptUrlError').html('Money Receipt is required.');
+                        else {
+                            $('#MoneyReceiptUrlError').html('');
+                        }
+                        var isUploadedPicConfirmed = $("#isOfRightSizeStep3").is(':checked') && $("#isOfProperPositionStep3").is(':checked');
+
+                        if (!isUploadedPicConfirmed) {
+                            validation = false;
+                            $('#ConfirmationErrorStep3').removeClass('hide');
+                        }
+                    }
+                    
+                }
+
+                return $('#registration').valid() && validation;
+
+            }
+            return true;
+        },
+        onFinishing: function () {
+            $('#registration').validate().settings.ignore = ":disabled,:hidden";
+            var emailExists = true;
+            emailExists = isEmailExists($('#Email').val());
+            if (!emailExists)
+                $('#EmailError').html("Email already exists.");
+            else {
+                $('#EmailError').html("");
+            }
+
+           
+
+            var profilePictureError = checkImage($('#ProfilePicture'));
+            var signatureError = checkImage($('#Signature'));
+            var validation = profilePictureError && signatureError;
+
+            var istermsAndConditionsChecked = $("#termsAndConditions").is(':checked');
+
+            if (!istermsAndConditionsChecked) {
+                validation = false;
+                $('#ConfirmationErrorTermsAndConditions').removeClass('hide');
+            }
+
+            return $('#registration').valid() && emailExists && validation;
+        },
+        onFinished: function () {
+
+            $("#EnrollerTypeId").removeAttr("disabled");
+            $("#PassingDate").removeAttr("disabled");
+            $("#BMDCValidityUpto").removeAttr("disabled");
+            $("#CollegeId").removeAttr("disabled");
+            $("#OtherCollege").removeAttr("disabled");
+            $("#Name").removeAttr("disabled");
+            $("#FatherName").removeAttr("disabled");
+            $("#MotherName").removeAttr("disabled");
+            $("#DateOfBirth").removeAttr("disabled");
+            $("#NationalityId").removeAttr("disabled");
+            confirmation = confirm("Do You Want To Submit The Form?");
+            if (confirmation) {
+                $('#registration')
+                    .submit();
+            }
+        }
+    });
+
+    //=========================FCPS-2====================================
+    $("#wizardFCPS2").steps({
+        onStepChanging: function (event, currentIndex, newIndex) {
+            if (newIndex > currentIndex) {
+                $('#registration').validate().settings.ignore = ":disabled,:hidden";
+                var validation = true;
+                if (currentIndex === 0) {
+
+                    var value = $('input:radio[name="ApplicantStatus"]:checked').val();
+
+                    if (value == 1) { // Old Student
+                        $('#new-student').html('');
+                        //$('#MoneyReceipt_Amount').val('13500');
+                        $.ajax({
+                            type: "Get",
+                            url: "/Base/FeeAmountFCPS2",
+                            data: { programType: value },
+                            contentType: "application/json; charset=utf-8",
+                            dataType: "json",
+                            success: successFunc
+
+                        });
+                        sharedService.ajaxCall("/Base/IsTimeForProgram", "GET", { programType: 4 }).then(function (data) {
+                            validation = data.Eligibility;
+                            if (validation) {
+                                $('#Old-student-FCPS-1').html('');
+                            }
+                            else {
+                                $('#Old-student-FCPS-1').html('Sorry, You can not register for exam now. ' + data.Message);
+                            }
+
+                            if ($('#PenOrMenOrSen').val() == "") {
+                                $('#PenOrMenOrSenRequiredMessage').html('Please Enter Pen/Men/Sen No. to Proceed');
+                                validation = false;
+                            }
+                            else {
+                                $('#PenOrMenOrSenRequiredMessage').html('');
+                            }
+                        });
+
+                    }
+                    else if (value == 2) { // New Student
+                        //$('#MoneyReceipt_Amount').val('15000');
+                        $.ajax({
+                            type: "Get",
+                            url: "/Base/FeeAmountFCPS2",
+                            data: { programType: value },
+                            contentType: "application/json; charset=utf-8",
+                            dataType: "json",
+                            success: successFunc
+
+                        });
+                        sharedService.ajaxCall("/Base/IsTimeForProgram", "GET", { programType: 3 }).then(function (data) {
+                            validation = data.Eligibility;
+                            if (validation)
+                                $('#new-student').html('');
+                            else {
+                                $('#new-student').html('Sorry, You can not register for exam now. ' + data.Message);
+                            }
+                        });
+
+                    }
+                    else {
+                        validation = false;
+                    }
+
+                    function successFunc(data) {
+                        $('#MoneyReceipt_Amount').val(data);
+                    }
+                    var passingDateError = passingDurationDMY($("#PassingDate").val()) >= 365;
+                    if (!passingDateError) {
+                        $('#PassingDateError').html('You have to complete 1 year after passing MBBS/BDS to register.');
+                        validation = false;
+                    } else {
+                        $('#PassingDateError').html('');
+                    }
+                    if (validation) {
+                        ////Check Duplicate BMDC Number/////
+                        var existBMDCNumber = isBMDCNumberExists($('#BMDCRegistrationNumber').val(), $("#EnrollerTypeId").val());
+                        var barred = isBarredStudent($('#BMDCRegistrationNumber').val());
+
+                        if (!barred) {
+                            $('#BarredError').html('This BMDC number has been barred from registration. Please contact BCPS Administration');
+                            validation = false;
+                        } else {
+                            $('#BarredError').html('');
+                        }
+                        if (!existBMDCNumber) {
+                            $('#BMDCRegistrationError').html('BMDC Registration Number already exists.');
+                            validation = false;
+                        } else {
+                            $('#BMDCRegistrationError').html('');
+                        }
+                        var programType = $('#EnrollerTypeId').val();
+                        if (programType == '1') {
+                            var bmdcNumber = $('#BMDCRegistrationNumber').val();
+                            var regularExpression = GetRegularExpression(); //new RegExp(
+
+                            for (i = 0; i < regularExpression.length; i++) {
+                                var regex = new RegExp(regularExpression[i]);
+                                isItValid = regex.test(bmdcNumber);
+                                if (isItValid === true) { break; }
+                            }
+
+                            if (!isItValid) {
+                                $('#BMDCRegistrationValidationError').html('Invalid BMDC Number. It must not contain any space or special characters and it must start with a prefix');
+                                validation = false;
+                            }
+                            else {
+                                $('#BMDCRegistrationValidationError').html('');
+                            }
+
+                        } else {
+                            var regularExpression = /^\d+$/;
+                            var bmdcNumber = $('#BMDCRegistrationNumber').val();
+                            var isItValid = regularExpression.test(bmdcNumber);
+                            if (!isItValid) {
+                                $('#BMDCRegistrationValidationError').html('Invalid BMDC Number. It must not contain any space or special characters.');
+                                validation = false;
+                            }
+                            else {
+                                $('#BMDCRegistrationValidationError').html('');
+                            }
+                        }
+                        if (validation) {
+                            ////Check Certificates/////
+                            if ($('input:radio[name="ApplicantStatus"]:checked').val() == 2) {
+                                ////Check Certificates/////
+                                var mbbsCertificateError = checkImage($('#MBBSCertificate'));
+                                var bmdcCertificateError = checkImage($('#BMDCCertificate'));
+                                if (!mbbsCertificateError) {
+                                    $('#MBBSCertificateError').html('MBBS/BDS Certificate is Reqiured.');
+                                }
+                                else
+                                    $('#MBBSCertificateError').html('');
+                                if (!bmdcCertificateError) {
+                                    $('#BMDCCertificateError').html('BMDC Certificate is Reqiured.');
+                                }
+                                else
+                                    $('#BMDCCertificateError').html('');
+                                var isUploadedPicConfirmed = $("#isOfRightSizeStep1").is(':checked') && $("#isOfProperPositionStep1").is(':checked');
+                                validation = mbbsCertificateError && bmdcCertificateError && isUploadedPicConfirmed;
+
+                                if (!isUploadedPicConfirmed) {
+                                    $('#ConfirmationErrorStep1').removeClass('hide');
+                                }
+                                if (!validation) {
+                                    validation = false;
+                                } else {
+
+                                }
+                            }
+                        }
+                    }
+
+                }
+                else if (currentIndex == 1) {
+
+                    //validation = checkImage($('input[name="moneyReceiptImage"]'));
+                    //if (!validation) {
+                    //    $('#MoneyReceiptUrlError').html('Bank Deposit Slip is required.');
+                    //    validation = false;
+                    //}
+                    //else {
+                    //    $('#MoneyReceiptUrlError').html('');
+                    //}
+                    //var isUploadedPicConfirmed = $("#isOfRightSizeStep2").is(':checked') && $("#isOfProperPositionStep2").is(':checked');
+
+                    //if (!isUploadedPicConfirmed) {
+                    //    validation = false;
+                    //    $('#ConfirmationErrorStep2').removeClass('hide');
+                    //}
+                }
+                else if (currentIndex === 2) { // Enrolment Information
+                    if ($('input:radio[name="ApplicantStatus"]:checked').val() == 2) {
+                        validation = checkImage($('#PassingDocFCPS1'));
+                        if (!validation)
+                            $('#PassingDocFCPS1Error').html('Passing document of FCPS-1 is required.');
+                        else {
+                            $('#PassingDocFCPS1Error').html('');
+                        }
+                    }
+                    if ($(".confirmationStep3").hasClass('hide') != true) {
+                        var isUploadedPicConfirmed = $("#isOfRightSizeStep3").is(':checked') && $("#isOfProperPositionStep3").is(':checked');
+
+                        if (!isUploadedPicConfirmed) {
+                            validation = false;
+                            $('#ConfirmationErrorStep3').removeClass('hide');
+                        }
+                    }
+
+
+                }
+                else if (currentIndex === 3) {
+                    var employeeType = $('#EmploymentTypeId').val();
+                    if (employeeType === "1") {
+                        if (!$('.GovrmentEmployeeCodeNumber').val().trim().length) {
+                            $("#GovrmentEmployeeCodeNumberError").html("Goverment Employee Code Number is required.");
+                            validation = false;
+                        } else {
+                            $("#GovrmentEmployeeCodeNumberError").html("");
+                        }
+                    }
+
+                }
+                else if (currentIndex === 5) {
+                    var isUploadedPicConfirmed = $("#isOfRightSizeStep6").is(':checked') && $("#isOfProperPositionStep6").is(':checked');
+
+                    if (!isUploadedPicConfirmed) {
+                        validation = false;
+                        $('#ConfirmationErrorStep6').removeClass('hide');
+                    }
+                }
+                else if (currentIndex === 6) {
+                    var paymentType = $('#PaymentTypeId').val();
+                    if (paymentType === "1") {
+                        validation = checkImage($('input[name="moneyReceiptImage"]'));
+                        if (!validation) {
+                            $('#MoneyReceiptUrlError').html('Bank Deposit Slip is required.');
+                            validation = false;
+                        }
+                        else {
+                            $('#MoneyReceiptUrlError').html('');
+                        }
+                    }
+                    
+                }
+                return $('#registration').valid() && validation;
+            }
+            return true;
+        },
+        onFinishing: function () {
+            $('#registration').validate().settings.ignore = ":disabled,:hidden";
+            var emailExists = true;
+
+            //if ($('input:radio[name="ApplicantStatus"]:checked').val() === "2") {
+            //    emailExists = isEmailExists($('#Email').val());
+            //    if (!emailExists)
+            //        $('#EmailError').html("Email already exists.");
+            //    else {
+            //        $('#EmailError').html("");
+            //    }
+            //}
+
+            emailExists = isEmailExists($('#Email').val());
+            if (!emailExists)
+                $('#EmailError').html("Email already exists.");
+            else {
+                $('#EmailError').html("");
+            }
+            var profilePictureError = checkImage($('#ProfilePicture'));
+            var signatureError = checkImage($('#Signature'));
+            var validation = profilePictureError && signatureError;
+
+            var istermsAndConditionsChecked = $("#termsAndConditions").is(':checked');
+
+            if (!istermsAndConditionsChecked) {
+                validation = false;
+                $('#ConfirmationErrorTermsAndConditions').removeClass('hide');
+            }
+
+            return $('#registration').valid() && emailExists && validation;
+        },
+        onFinished: function () {
+            c = confirm("Do You Want To Submit The Form?");
+            if (c) {
+                $('#registration')
+                    .submit();
+            }
+
+
+        }
+    });
+    //======================================================
+
+    //=================FCPS-2 Specialized Speciality========
+    $("#wizardFCPS2Special").steps({
+        onStepChanging: function (event, currentIndex, newIndex) {
+            if (newIndex > currentIndex) {
+                $('#registration').validate().settings.ignore = ":disabled,:hidden";
+                var validation = true;
+                if (currentIndex === 0) {
+                    var value = $('input:radio[name="ApplicantStatus"]:checked').val();
+                    if (value == 1) { // Old Student
+                        //$('#MoneyReceipt_Amount').val('13500');
+                        $.ajax({
+                            type: "Get",
+                            url: "/Base/FeeAmountFCPS2Special",
+                            data: { programType: value },
+                            contentType: "application/json; charset=utf-8",
+                            dataType: "json",
+                            success: successFunc
+
+                        });
+                        $('#new-student').html('');
+                        sharedService.ajaxCall("/Base/IsTimeForProgram", "GET", { programType: 6 }).then(function (data) {
+                            validation = data.Eligibility;
+                            if (validation) {
+                                $('#Old-student-FCPS-1').html('');
+                            }
+                            else {
+                                $('#Old-student-FCPS-1').html('Sorry, You can not register for exam now. ' + data.Message);
+                            }
+
+                            if ($('#PenOrMenOrSen').val() == "") {
+                                $('#PenOrMenOrSenRequiredMessage').html('Please Enter Pen/Men/Sen No. to Proceed');
+                                validation = false;
+                            }
+                            else {
+                                $('#PenOrMenOrSenRequiredMessage').html('');
+                            }
+                        });
+
+                    }
+                    else if (value == 2) { // New Student
+                        //$('#MoneyReceipt_Amount').val('15000');
+                        $.ajax({
+                            type: "Get",
+                            url: "/Base/FeeAmountFCPS2Special",
+                            data: { programType: value },
+                            contentType: "application/json; charset=utf-8",
+                            dataType: "json",
+                            success: successFunc
+
+                        });
+                        sharedService.ajaxCall("/Base/IsTimeForProgram", "GET", { programType: 5 }).then(function (data) {
+                            validation = data.Eligibility;
+                            if (validation)
+                                $('#new-student').html('');
+                            else {
+                                $('#new-student').html('Sorry, You can not register for exam now. ' + data.Message);
+                            }
+                        });
+                        var isUploadedPicConfirmed = $("#isOfRightSizeStep1").is(':checked') && $("#isOfProperPositionStep1").is(':checked');
+
+                        if (!isUploadedPicConfirmed) {
+                            validation = false;
+                            $('#ConfirmationErrorStep1').removeClass('hide');
+                        }
+
+                    }
+                    else
+                        validation = false;
+                    function successFunc(data) {
+                        $('#MoneyReceipt_Amount').val(data);
+                    }
+                    var programType = $('#EnrollerTypeId').val();
+                    var passingDateError = passingDurationDMY($("#PassingDate").val()) >= 365;
+                    if (!passingDateError) {
+                        $('#PassingDateError').html('You have to complete 1 year after passing MBBS/BDS to register.');
+                        validation = false;
+                    } else {
+                        $('#PassingDateError').html('');
+                    }
+              
+                    if (validation) {
+                        ////Check Duplicate BMDC Number/////
+                        var existBMDCNumber = isBMDCNumberExists($('#BMDCRegistrationNumber').val(), $("#EnrollerTypeId").val());
+                        var barred = isBarredStudent($('#BMDCRegistrationNumber').val());
+
+                        if (!barred) {
+                            $('#BarredError').html('This BMDC number has been barred from registration. Please contact BCPS Administration');
+                            validation = false;
+                        } else {
+                            $('#BarredError').html('');
+                        }
+                        if (!existBMDCNumber) {
+                            $('#BMDCRegistrationError').html('BMDC Registration Number already exists.');
+                            validation = false;
+                        } else {
+                            $('#BMDCRegistrationError').html('');
+                           
+                        }
+                        if (programType == '1') {
+                            var bmdcNumber = $('#BMDCRegistrationNumber').val();
+                            var regularExpression = GetRegularExpression(); //new RegExp(
+
+                            for (i = 0; i < regularExpression.length; i++) {
+                                var regex = new RegExp(regularExpression[i]);
+                                isItValid = regex.test(bmdcNumber);
+                                if (isItValid === true) { break; }
+                            }
+
+                            if (!isItValid) {
+                                $('#BMDCRegistrationValidationError').html('Invalid BMDC Number. It must not contain any space or special characters and it must start with a prefix');
+                                validation = false;
+                            }
+                            else {
+                                $('#BMDCRegistrationValidationError').html('');
+                            }
+
+                        } else {
+                            var regularExpression = /^\d+$/;
+                            var bmdcNumber = $('#BMDCRegistrationNumber').val();
+                            var isItValid = regularExpression.test(bmdcNumber);
+                            if (!isItValid) {
+                                $('#BMDCRegistrationValidationError').html('Invalid BMDC Number. It must not contain any space or special characters.');
+                                validation = false;
+
+                            }
+                            else {
+                                $('#BMDCRegistrationValidationError').html('');
+                            }
+
+                        }
+                        if (validation) {
+                            ////Check Certificates/////
+                            if ($('input:radio[name="ApplicantStatus"]:checked').val() == 2) {
+                                ////Check Certificates/////
+                                var mbbsCertificateError = checkImage($('#MBBSCertificate'));
+                                var bmdcCertificateError = checkImage($('#BMDCCertificate'));
+                                if (!mbbsCertificateError) {
+                                    $('#MBBSCertificateError').html('MBBS/BDS Certificate is Reqiured.');
+                                }
+                                else
+                                    $('#MBBSCertificateError').html('');
+                                if (!bmdcCertificateError) {
+                                    $('#BMDCCertificateError').html('BMDC Certificate is Reqiured.');
+                                }
+                                else
+                                    $('#BMDCCertificateError').html('');
+                                validation = mbbsCertificateError && bmdcCertificateError;
+                                if (!validation) {
+                                    validation = false;
+                                } else {
+
+                                }
+                            }
+                        }
+                      
+                    }
+
+                }
+                else if (currentIndex == 1) {
+                    //validation = checkImage($('input[name="moneyReceiptImage"]'));
+                    //if (!validation) {
+                    //    $('#MoneyReceiptUrlError').html('Bank Deposit Slip is required.');
+                    //    validation = false;
+                    //}
+                    //else {
+                    //    $('#MoneyReceiptUrlError').html('');
+                    //}
+                    //var isUploadedPicConfirmed = $("#isOfRightSizeStep2").is(':checked') && $("#isOfProperPositionStep2").is(':checked');
+
+                    //if (!isUploadedPicConfirmed) {
+                    //    validation = false;
+                    //    $('#ConfirmationErrorStep2').removeClass('hide');
+                    //}
+                }
+                else if (currentIndex === 2) {
+                    if ($('#PassingDocPreliFCPS2').val() != "") {
+                        var isUploadedPicConfirmed = $("#isOfRightSizeStep3").is(':checked') && $("#isOfProperPositionStep3").is(':checked');
+
+                        if (!isUploadedPicConfirmed) {
+                            validation = false;
+                            $('#ConfirmationErrorStep3').removeClass('hide');
+                        }
+                    }
+                  
+                }
+                else if (currentIndex === 3) {
+                    var employeeType = $('#EmploymentTypeId').val();
+                    if (employeeType === "1") {
+                        if (!$('.GovrmentEmployeeCodeNumber').val().trim().length) {
+                            $("#GovrmentEmployeeCodeNumberError").html("Goverment Employee Code Number is required.");
+                            validation = false;
+                        } else {
+                            $("#GovrmentEmployeeCodeNumberError").html("");
+                        }
+                    }
+                   
+                }
+                else if (currentIndex === 5) {
+                    var isUploadedPicConfirmed = $("#isOfRightSizeStep6").is(':checked') && $("#isOfProperPositionStep6").is(':checked');
+
+                    if (!isUploadedPicConfirmed) {
+                        validation = false;
+                        $('#ConfirmationErrorStep6').removeClass('hide');
+                    }
+                } else if (currentIndex === 7) {
+                    var paymentType = $('#PaymentTypeId').val();
+                    if (paymentType === "1") {
+                        validation = checkImage($('input[name="moneyReceiptImage"]'));
+                        if (!validation) {
+                            $('#MoneyReceiptUrlError').html('Bank Deposit Slip is required.');
+                            validation = false;
+                        }
+                        else {
+                            $('#MoneyReceiptUrlError').html('');
+                        }
+                        var isUploadedPicConfirmed = $("#isOfRightSizeStep2").is(':checked') && $("#isOfProperPositionStep2").is(':checked');
+
+                        if (!isUploadedPicConfirmed) {
+                            validation = false;
+                            $('#ConfirmationErrorStep2').removeClass('hide');
+                        }
+                    }
+                }
+
+                return $('#registration').valid() && validation;
+            }
+            return true;
+        },
+        onFinishing: function () {
+            $('#registration').validate().settings.ignore = ":disabled,:hidden";
+            var emailExists = true;
+
+            //if ($('input:radio[name="ApplicantStatus"]:checked').val() === "2") {
+            //    emailExists = isEmailExists($('#Email').val());
+            //    if (!emailExists)
+            //        $('#EmailError').html("Email already exists.");
+            //    else {
+            //        $('#EmailError').html("");
+            //    }
+            //}
+
+            emailExists = isEmailExists($('#Email').val());
+            if (!emailExists)
+                $('#EmailError').html("Email already exists.");
+            else {
+                $('#EmailError').html("");
+            }
+            var profilePictureError = checkImage($('#ProfilePicture'));
+            var signatureError = checkImage($('#Signature'));
+            var validation = profilePictureError && signatureError;
+
+            var istermsAndConditionsChecked = $("#termsAndConditions").is(':checked');
+
+            if (!istermsAndConditionsChecked) {
+                validation = false;
+                $('#ConfirmationErrorTermsAndConditions').removeClass('hide');
+            }
+
+            return $('#registration').valid() && emailExists && validation;
+        },
+        onFinished: function () {
+
+            var confirmation = confirm("Do You Want To Submit The Form?");
+            if (confirmation) {
+                $('#registration')
+                    .submit();
+            }
+        }
+    });
+    //=====================================================
+
+    //=================Preli FCPS-2========================
+    $("#wizardPreliFCPS2").steps({
+        onStepChanging: function (event, currentIndex, newIndex) {
+            if (newIndex > currentIndex) {
+                $('#registration').validate().settings.ignore = ":disabled,:hidden";
+                var validation = true;
+                if (currentIndex === 0) {
+                    var value = $('input:radio[name="ApplicantStatus"]:checked').val();
+                    if (value == 1) { // Old Student
+                        $('#new-student').html('');
+                        //$('#MoneyReceipt_Amount').val('12000');
+                        $.ajax({
+                            type: "Get",
+                            url: "/Base/FeeAmountPreliFCPS2",
+                            data: { programType: value },
+                            contentType: "application/json; charset=utf-8",
+                            dataType: "json",
+                            success: successFunc
+                        });
+                        sharedService.ajaxCall("/Base/IsTimeForProgram", "GET", { programType: 8 }).then(function (data) {
+                            validation = data.Eligibility;
+                            if (validation) {
+                                $('#Old-student-FCPS-1').html('');
+                            }
+                            else {
+                                $('#Old-student-FCPS-1').html('Sorry, You can not register for exam now. ' + data.Message);
+                            }
+
+                            if ($('#PenOrMenOrSen').val() == "") {
+                                $('#PenOrMenOrSenRequiredMessage').html('Please Enter Pen/Men/Sen No. to Proceed');
+                                validation = false;
+                            }
+                            else {
+                                $('#PenOrMenOrSenRequiredMessage').html('');
+                            }
+                        });
+
+
+                    }
+                    else if (value == 2) { // New Student
+                        //$('#MoneyReceipt_Amount').val('13500');
+                        $.ajax({
+                            type: "Get",
+                            url: "/Base/FeeAmountPreliFCPS2",
+                            data: { programType: value },
+                            contentType: "application/json; charset=utf-8",
+                            dataType: "json",
+                            success: successFunc
+
+                        });
+                        sharedService.ajaxCall("/Base/IsTimeForProgram", "GET", { programType: 7 }).then(function (data) {
+                            validation = data.Eligibility;
+                            if (validation)
+                                $('#new-student').html('');
+                            else {
+                                $('#new-student').html('Sorry, You can not register for exam now. ' + data.Message);
+                            }
+                        });
+                        var isUploadedPicConfirmed = $("#isOfRightSizeStep1").is(':checked') && $("#isOfProperPositionStep1").is(':checked');
+
+                        if (!isUploadedPicConfirmed) {
+                            validation = false;
+                            $('#ConfirmationErrorStep1').removeClass('hide');
+                        }
+                    }
+                    else
+                        validation = false;
+
+                    function successFunc(data) {
+                        $('#MoneyReceipt_Amount').val(data);
+                    }
+                    var passingDateError = passingDurationDMY($("#PassingDate").val()) >= 365;
+                    if (!passingDateError) {
+                        $('#PassingDateError').html('You have to complete 1 year after passing MBBS/BDS to register.');
+                        validation = false;
+                    } else {
+                        $('#PassingDateError').html('');
+                    }
+
+                    if (validation) {
+                        ////Check Duplicate BMDC Number/////
+                        var existBMDCNumber = isBMDCNumberExists($('#BMDCRegistrationNumber').val(), $("#EnrollerTypeId").val());
+                        var barred = isBarredStudent($('#BMDCRegistrationNumber').val());
+
+                        if (!barred) {
+                            $('#BarredError').html('This BMDC number has been barred from registration. Please contact BCPS Administration');
+                            validation = false;
+                        } else {
+                            $('#BarredError').html('');
+                        }
+                        if (!existBMDCNumber) {
+                            $('#BMDCRegistrationError').html('BMDC Registration Number already exists.');
+                            validation = false;
+                        } else {
+                            $('#BMDCRegistrationError').html('');
+                        }
+                        var programType = $('#EnrollerTypeId').val();
+                        if (programType == '1') {
+                            var bmdcNumber = $('#BMDCRegistrationNumber').val();
+                            var regularExpression = GetRegularExpression(); //new RegExp(
+
+                            for (i = 0; i < regularExpression.length; i++) {
+                                var regex = new RegExp(regularExpression[i]);
+                                isItValid = regex.test(bmdcNumber);
+                                if (isItValid === true) { break; }
+                            }
+
+                            if (!isItValid) {
+                                $('#BMDCRegistrationValidationError').html('Invalid BMDC Number. It must not contain any space or special characters and it must start with a prefix');
+                                validation = false;
+                            }
+                            else {
+                                $('#BMDCRegistrationValidationError').html('');
+                            }
+
+                        } else {
+                            var regularExpression = /^\d+$/;
+                            var bmdcNumber = $('#BMDCRegistrationNumber').val();
+                            var isItValid = regularExpression.test(bmdcNumber);
+                            if (!isItValid) {
+                                $('#BMDCRegistrationValidationError').html('Invalid BMDC Number. It must not contain any space or special characters.');
+                                validation = false;
+
+                            }
+                            else {
+                                $('#BMDCRegistrationValidationError').html('');
+                            }
+
+                        }
+
+                        if (validation) {
+                            ////Check Certificates/////
+                            if ($('input:radio[name="ApplicantStatus"]:checked').val() == 2) {
+                                ////Check Certificates/////
+                                var mbbsCertificateError = checkImage($('#MBBSCertificate'));
+                                var bmdcCertificateError = checkImage($('#BMDCCertificate'));
+                                if (!mbbsCertificateError) {
+                                    $('#MBBSCertificateError').html('MBBS/BDS Certificate is Reqiured.');
+                                }
+                                else
+                                    $('#MBBSCertificateError').html('');
+                                if (!bmdcCertificateError) {
+                                    $('#BMDCCertificateError').html('BMDC Certificate is Reqiured.');
+                                }
+                                else
+                                    $('#BMDCCertificateError').html('');
+                                validation = mbbsCertificateError && bmdcCertificateError;
+                                if (!validation) {
+                                    validation = false;
+                                } else {
+
+                                }
+                            }
+                        }
+                    }
+
+                }
+                else if (currentIndex == 1) {
+                    //validation = checkImage($('input[name="moneyReceiptImage"]'));
+                    //if (!validation) {
+                    //    $('#MoneyReceiptUrlError').html('Bank Deposit Slip is required.');
+                    //    validation = false;
+                    //}
+                    //else {
+                    //    $('#MoneyReceiptUrlError').html('');
+                    //}
+                    //var isUploadedPicConfirmed = $("#isOfRightSizeStep2").is(':checked') && $("#isOfProperPositionStep2").is(':checked');
+
+                    //if (!isUploadedPicConfirmed) {
+                    //    validation = false;
+                    //    $('#ConfirmationErrorStep2').removeClass('hide');
+                    //}
+                }
+                else if (currentIndex == 2) {
+
+                    var isUploadedPicConfirmed = $("#isOfRightSizeStep3").is(':checked') && $("#isOfProperPositionStep3").is(':checked');
+
+                    if (!isUploadedPicConfirmed) {
+                        validation = false;
+                        $('#ConfirmationErrorStep3').removeClass('hide');
+                    }
+                }
+                else if (currentIndex === 3) {
+                    var employeeType = $('#EmploymentTypeId').val();
+                    if (employeeType === "1") {
+                        if (!$('.GovrmentEmployeeCodeNumber').val().trim().length) {
+                            $("#GovrmentEmployeeCodeNumberError").html("Goverment Employee Code Number is required.");
+                            validation = false;
+                        } else {
+                            $("#GovrmentEmployeeCodeNumberError").html("");
+                        }
+                    }
+                }
+                else if (currentIndex == 5) {
+
+                    var isUploadedPicConfirmed = $("#isOfRightSizeStep6").is(':checked') && $("#isOfProperPositionStep6").is(':checked');
+
+                    if (!isUploadedPicConfirmed) {
+                        validation = false;
+                        $('#ConfirmationErrorStep6').removeClass('hide');
+                    }
+                }
+                else if (currentIndex == 7) {
+                    var paymentType = $('#PaymentTypeId').val();
+                    if (paymentType === "1") {
+                        validation = checkImage($('input[name="moneyReceiptImage"]'));
+                        if (!validation) {
+                            $('#MoneyReceiptUrlError').html('Bank Deposit Slip is required.');
+                            validation = false;
+                        }
+                        else {
+                            $('#MoneyReceiptUrlError').html('');
+                        }
+                        var isUploadedPicConfirmed = $("#isOfRightSizeStep2").is(':checked') && $("#isOfProperPositionStep2").is(':checked');
+
+                        if (!isUploadedPicConfirmed) {
+                            validation = false;
+                            $('#ConfirmationErrorStep2').removeClass('hide');
+                        }
+                    }
+                }
+
+                return $('#registration').valid() && validation;
+            }
+            return true;
+        },
+        onFinishing: function () {
+            $('#registration').validate().settings.ignore = ":disabled,:hidden";
+            var emailExists = true;
+
+            //if ($('input:radio[name="ApplicantStatus"]:checked').val() === "2") {
+            //    emailExists = isEmailExists($('#Email').val());
+            //    if (!emailExists)
+            //        $('#EmailError').html("Email already exists.");
+            //    else {
+            //        $('#EmailError').html("");
+            //    }
+            //}
+
+            emailExists = isEmailExists($('#Email').val());
+            if (!emailExists)
+                $('#EmailError').html("Email already exists.");
+            else {
+                $('#EmailError').html("");
+            }
+            var profilePictureError = checkImage($('#ProfilePicture'));
+            var signatureError = checkImage($('#Signature'));
+            var validation = profilePictureError && signatureError;
+
+            var istermsAndConditionsChecked = $("#termsAndConditions").is(':checked');
+
+            if (!istermsAndConditionsChecked) {
+                validation = false;
+                $('#ConfirmationErrorTermsAndConditions').removeClass('hide');
+            }
+
+            return $('#registration').valid() && emailExists && validation;
+        },
+        onFinished: function () {
+
+            var confirmation = confirm("Do You Want To Submit The Form?");
+            if (confirmation) {
+                $('#registration')
+                    .submit();
+            }
+        }
+    });
+    //=====================================================
+
+    //=================MCPS================================
+    $("#wizardMCPS").steps({
+        onStepChanging: function (event, currentIndex, newIndex) {
+
+            if (newIndex > currentIndex) {
+                $('#registration').validate().settings.ignore = ":disabled,:hidden";
+                var validation = true;
+                if (currentIndex === 0) {
+                    var value = $('input:radio[name="ApplicantStatus"]:checked').val();
+                    if (value == 1) {
+                        //$('#MoneyReceipt_Amount').val('13500');// Old Student
+                        $.ajax({
+                            type: "Get",
+                            url: "/Base/FeeAmountMcps",
+                            data: { programType: value },
+                            contentType: "application/json; charset=utf-8",
+                            dataType: "json",
+                            success: successFunc
+
+                        });
+                        $('#new-student').html('');
+                        sharedService.ajaxCall("/Base/IsTimeForProgram", "GET", { programType: 10 }).then(function (data) {
+                            validation = data.Eligibility;
+                            if (validation) {
+                                $('#Old-student-FCPS-1').html('');
+                            }
+                            else {
+                                $('#Old-student-FCPS-1').html('Sorry, You can not register for exam now. ' + data.Message);
+                            }
+
+                            if ($('#PenOrMenOrSen').val() == "") {
+                                $('#PenOrMenOrSenRequiredMessage').html('Please Enter Pen/Men/Sen No. to Proceed');
+                                validation = false;
+                            }
+                            else {
+                                $('#PenOrMenOrSenRequiredMessage').html('');
+                            }
+                        });
+
+                    }
+                    else if (value == 2) { // New Student
+                        //$('#MoneyReceipt_Amount').val('15000');
+                        $.ajax({
+                            type: "Get",
+                            url: "/Base/FeeAmountMcps",
+                            data: { programType: value },
+                            contentType: "application/json; charset=utf-8",
+                            dataType: "json",
+                            success: successFunc
+
+                        });
+                        sharedService.ajaxCall("/Base/IsTimeForProgram", "GET", { programType: 9 }).then(function (data) {
+                            validation = data.Eligibility;
+                            if (validation)
+                                $('#new-student').html('');
+                            else {
+                                $('#new-student').html('Sorry, You can not register for exam now. ' + data.Message);
+                            }
+                        });
+                        var isUploadedPicConfirmed = $("#isOfRightSizeStep1").is(':checked') && $("#isOfProperPositionStep1").is(':checked');
+
+                        if (!isUploadedPicConfirmed) {
+                            validation = false;
+                            $('#ConfirmationErrorStep1').removeClass('hide');
+                        }
+                    }
+                    else
+                        validation = false;
+                    function successFunc(data) {
+                        $('#MoneyReceipt_Amount').val(data);
+                    }
+                    var passingDateError = passingDurationDMY($("#PassingDate").val()) >= 365;
+                    if (!passingDateError) {
+                        $('#PassingDateError').html('You have to complete 1 year after passing MBBS/BDS to register.');
+                        validation = false;
+                    } else {
+                        $('#PassingDateError').html('');
+                    }
+                    if (validation) {
+                        ////Check Duplicate BMDC Number/////
+                        var existBMDCNumber = isBMDCNumberExists($('#BMDCRegistrationNumber').val(), $("#EnrollerTypeId").val());
+                        var barred = isBarredStudent($('#BMDCRegistrationNumber').val());
+
+                        if (!barred) {
+                            $('#BarredError').html('This BMDC number has been barred from registration. Please contact BCPS Administration');
+                            validation = false;
+                        } else {
+                            $('#BarredError').html('');
+                        }
+                        if (!existBMDCNumber) {
+                            $('#BMDCRegistrationError').html('BMDC Registration Number already exists.');
+                            validation = false;
+                        } else {
+                            $('#BMDCRegistrationError').html('');
+                        }
+                        var programType = $('#EnrollerTypeId').val();
+                        if (programType == '1') {
+                            var bmdcNumber = $('#BMDCRegistrationNumber').val();
+                            var regularExpression = GetRegularExpression(); //new RegExp(
+
+                            for (i = 0; i < regularExpression.length; i++) {
+                                var regex = new RegExp(regularExpression[i]);
+                                isItValid = regex.test(bmdcNumber);
+                                if (isItValid === true) { break; }
+                            }
+
+                            if (!isItValid) {
+                                $('#BMDCRegistrationValidationError').html('Invalid BMDC Number. It must not contain any space or special characters and it must start with a prefix');
+                                validation = false;
+                            }
+                            else {
+                                $('#BMDCRegistrationValidationError').html('');
+                            }
+
+                        } else {
+                            var regularExpression = /^\d+$/;
+                            var bmdcNumber = $('#BMDCRegistrationNumber').val();
+                            var isItValid = regularExpression.test(bmdcNumber);
+                            if (!isItValid) {
+                                $('#BMDCRegistrationValidationError').html('Invalid BMDC Number. It must not contain any space or special characters.');
+                                validation = false;
+
+                            }
+                            else {
+                                $('#BMDCRegistrationValidationError').html('');
+                            }
+
+                        }
+                        if (validation) {
+                            if ($('input:radio[name="ApplicantStatus"]:checked').val() == 2) {
+                                ////Check Certificates/////
+                                var mbbsCertificateError = checkImage($('#MBBSCertificate'));
+                                var bmdcCertificateError = checkImage($('#BMDCCertificate'));
+                                if (!mbbsCertificateError) {
+                                    $('#MBBSCertificateError').html('MBBS/BDS Certificate is Reqiured.');
+                                }
+                                else
+                                    $('#MBBSCertificateError').html('');
+                                if (!bmdcCertificateError) {
+                                    $('#BMDCCertificateError').html('BMDC Certificate is Reqiured.');
+                                }
+                                else
+                                    $('#BMDCCertificateError').html('');
+                                validation = mbbsCertificateError && bmdcCertificateError;
+                                if (!validation) {
+                                    validation = false;
+                                } else {
+
+                                }
+                            }
+                        }
+                    }
+
+                }
+                else if (currentIndex == 1) {
+                    //validation = checkImage($('input[name="moneyReceiptImage"]'));
+                    //if (!validation) {
+                    //    $('#MoneyReceiptUrlError').html('Bank Deposit Slip is required.');
+                    //    validation = false;
+                    //}
+                    //else {
+                    //    $('#MoneyReceiptUrlError').html('');
+                    //}
+                    //var isUploadedPicConfirmed = $("#isOfRightSizeStep2").is(':checked') && $("#isOfProperPositionStep2").is(':checked');
+
+                    //if (!isUploadedPicConfirmed) {
+                    //    validation = false;
+                    //    $('#ConfirmationErrorStep2').removeClass('hide');
+                    //}
+                }
+                else if (currentIndex === 3) {
+                    var employeeType = $('#EmploymentTypeId').val();
+                    if (employeeType === "1") {
+                        if (!$('.GovrmentEmployeeCodeNumber').val().trim().length) {
+                            $("#GovrmentEmployeeCodeNumberError").html("Goverment Employee Code Number is required.");
+                            validation = false;
+                        } else {
+                            $("#GovrmentEmployeeCodeNumberError").html("");
+                        }
+                    }
+                }
+                else if (currentIndex == 5) {
+
+                    var isUploadedPicConfirmed = $("#isOfRightSizeStep6").is(':checked') && $("#isOfProperPositionStep6").is(':checked');
+
+                    if (!isUploadedPicConfirmed) {
+                        validation = false;
+                        $('#ConfirmationErrorStep6').removeClass('hide');
+                    }
+                }
+                else if (currentIndex === 6) {
+                    var paymentType = $('#PaymentTypeId').val();
+                        if (paymentType === "1") {
+                             validation = checkImage($('input[name="moneyReceiptImage"]'));
+                        if (!validation) {
+                            $('#MoneyReceiptUrlError').html('Bank Deposit Slip is required.');
+                            validation = false;
+                        }
+                        else {
+                            $('#MoneyReceiptUrlError').html('');
+                        }
+                        var isUploadedPicConfirmed = $("#isOfRightSizeStep2").is(':checked') && $("#isOfProperPositionStep2").is(':checked');
+
+                        if (!isUploadedPicConfirmed) {
+                            validation = false;
+                            $('#ConfirmationErrorStep2').removeClass('hide');
+                        }
+                    }
+                }
+
+                return $('#registration').valid() && validation;
+            }
+            return true;
+        },
+        onFinishing: function () {
+            $('#registration').validate().settings.ignore = ":disabled,:hidden";
+            var emailExists = true;
+
+            //if ($('input:radio[name="ApplicantStatus"]:checked').val() === "2") {
+            //    emailExists = isEmailExists($('#Email').val());
+            //    if (!emailExists)
+            //        $('#EmailError').html("Email already exists.");
+            //    else {
+            //        $('#EmailError').html("");
+            //    }
+            //}
+
+            emailExists = isEmailExists($('#Email').val());
+            if (!emailExists)
+                $('#EmailError').html("Email already exists.");
+            else {
+                $('#EmailError').html("");
+            }
+
+            var profilePictureError = checkImage($('#ProfilePicture'));
+            var signatureError = checkImage($('#Signature'));
+            var validation = profilePictureError && signatureError;
+
+            var istermsAndConditionsChecked = $("#termsAndConditions").is(':checked');
+
+            if (!istermsAndConditionsChecked) {
+                validation = false;
+                $('#ConfirmationErrorTermsAndConditions').removeClass('hide');
+            }
+
+            return $('#registration').valid() && emailExists && validation;
+        },
+        onFinished: function () {
+
+            var confirmation = confirm("Do You Want To Submit The Form?");
+            if (confirmation) {
+                $('#registration')
+                    .submit();
+            }
+        }
+    });
+    //=====================================================
+
+    //=================Midterm FCPS-2========================
+    $("#wizardMidtermFCPS").steps({
+        onStepChanging: function (event, currentIndex, newIndex) {
+            if (newIndex > currentIndex) {
+                $('#registration').validate().settings.ignore = ":disabled,:hidden";
+                var validation = true;
+                if (currentIndex === 0) {
+                    var value = $('input:radio[name="ApplicantStatus"]:checked').val();
+                    if (value == 1) { // Old Student
+                        $('#new-student').html('');
+                        //$('#MoneyReceipt_Amount').val('12000');
+                        $.ajax({
+                            type: "Get",
+                            url: "/Base/FeeAmountPreliFCPS2",
+                            data: { programType: value },
+                            contentType: "application/json; charset=utf-8",
+                            dataType: "json",
+                            success: successFunc
+                        });
+                        sharedService.ajaxCall("/Base/IsTimeForProgram", "GET", { programType: 12 }).then(function (data) {
+                            validation = data.Eligibility;
+                            if (validation) {
+                                $('#Old-student-FCPS-1').html('');
+                            }
+                            else {
+                                $('#Old-student-FCPS-1').html('Sorry, You can not register for exam now. ' + data.Message);
+                            }
+
+                            if ($('#PenOrMenOrSen').val() == "") {
+                                $('#PenOrMenOrSenRequiredMessage').html('Please Enter Pen/Men/Sen No. to Proceed');
+                                validation = false;
+                            }
+                            else {
+                                $('#PenOrMenOrSenRequiredMessage').html('');
+                            }
+                        });
+
+
+                    }
+                    else if (value == 2) { // New Student
+                        //$('#MoneyReceipt_Amount').val('13500');
+                        $.ajax({
+                            type: "Get",
+                            url: "/Base/FeeAmountPreliFCPS2",
+                            data: { programType: value },
+                            contentType: "application/json; charset=utf-8",
+                            dataType: "json",
+                            success: successFunc
+
+                        });
+                        sharedService.ajaxCall("/Base/IsTimeForProgram", "GET", { programType: 11 }).then(function (data) {
+                            validation = data.Eligibility;
+                            if (validation)
+                                $('#new-student').html('');
+                            else {
+                                $('#new-student').html('Sorry, You can not register for exam now. ' + data.Message);
+                            }
+                        });
+                        var isUploadedPicConfirmed = $("#isOfRightSizeStep1").is(':checked') && $("#isOfProperPositionStep1").is(':checked');
+
+                        if (!isUploadedPicConfirmed) {
+                            validation = false;
+                            $('#ConfirmationErrorStep1').removeClass('hide');
+                        }
+                    }
+                    else
+                        validation = false;
+
+                    function successFunc(data) {
+                        $('#MoneyReceipt_Amount').val(data);
+                    }
+                    var passingDateError = passingDurationDMY($("#PassingDate").val()) >= 365;
+                    if (!passingDateError) {
+                        $('#PassingDateError').html('You have to complete 1 year after passing MBBS/BDS to register.');
+                        validation = false;
+                    } else {
+                        $('#PassingDateError').html('');
+                    }
+
+                    if (validation) {
+                        ////Check Duplicate BMDC Number/////
+                        var existBMDCNumber = isBMDCNumberExists($('#BMDCRegistrationNumber').val(), $("#EnrollerTypeId").val());
+                        var barred = isBarredStudent($('#BMDCRegistrationNumber').val());
+
+                        if (!barred) {
+                            $('#BarredError').html('This BMDC number has been barred from registration. Please contact BCPS Administration');
+                            validation = false;
+                        } else {
+                            $('#BarredError').html('');
+                        }
+                        if (!existBMDCNumber) {
+                            $('#BMDCRegistrationError').html('BMDC Registration Number already exists.');
+                            validation = false;
+                        } else {
+                            $('#BMDCRegistrationError').html('');
+                        }
+                        var programType = $('#EnrollerTypeId').val();
+                        if (programType == '1') {
+                            var bmdcNumber = $('#BMDCRegistrationNumber').val();
+                            var regularExpression = GetRegularExpression(); //new RegExp(
+
+                            for (i = 0; i < regularExpression.length; i++) {
+                                var regex = new RegExp(regularExpression[i]);
+                                isItValid = regex.test(bmdcNumber);
+                                if (isItValid === true) { break; }
+                            }
+
+                            if (!isItValid) {
+                                $('#BMDCRegistrationValidationError').html('Invalid BMDC Number. It must not contain any space or special characters and it must start with a prefix');
+                                validation = false;
+                            }
+                            else {
+                                $('#BMDCRegistrationValidationError').html('');
+                            }
+
+                        } else {
+                            var regularExpression = /^\d+$/;
+                            var bmdcNumber = $('#BMDCRegistrationNumber').val();
+                            var isItValid = regularExpression.test(bmdcNumber);
+                            if (!isItValid) {
+                                $('#BMDCRegistrationValidationError').html('Invalid BMDC Number. It must not contain any space or special characters.');
+                                validation = false;
+
+                            }
+                            else {
+                                $('#BMDCRegistrationValidationError').html('');
+                            }
+
+                        }
+
+                        if (validation) {
+                            ////Check Certificates/////
+                            if ($('input:radio[name="ApplicantStatus"]:checked').val() == 2) {
+                                ////Check Certificates/////
+                                var mbbsCertificateError = checkImage($('#MBBSCertificate'));
+                                var bmdcCertificateError = checkImage($('#BMDCCertificate'));
+                                if (!mbbsCertificateError) {
+                                    $('#MBBSCertificateError').html('MBBS/BDS Certificate is Reqiured.');
+                                }
+                                else
+                                    $('#MBBSCertificateError').html('');
+                                if (!bmdcCertificateError) {
+                                    $('#BMDCCertificateError').html('BMDC Certificate is Reqiured.');
+                                }
+                                else
+                                    $('#BMDCCertificateError').html('');
+                                validation = mbbsCertificateError && bmdcCertificateError;
+                                if (!validation) {
+                                    validation = false;
+                                } else {
+
+                                }
+                            }
+                        }
+                    }
+
+                }
+                else if (currentIndex == 1) {
+                    //validation = checkImage($('input[name="moneyReceiptImage"]'));
+                    //if (!validation) {
+                    //    $('#MoneyReceiptUrlError').html('Bank Deposit Slip is required.');
+                    //    validation = false;
+                    //}
+                    //else {
+                    //    $('#MoneyReceiptUrlError').html('');
+                    //}
+                    //var isUploadedPicConfirmed = $("#isOfRightSizeStep2").is(':checked') && $("#isOfProperPositionStep2").is(':checked');
+
+                    //if (!isUploadedPicConfirmed) {
+                    //    validation = false;
+                    //    $('#ConfirmationErrorStep2').removeClass('hide');
+                    //}
+                }
+                else if (currentIndex == 2) {
+
+                    var isUploadedPicConfirmed = $("#isOfRightSizeStep3").is(':checked') && $("#isOfProperPositionStep3").is(':checked');
+
+                    if (!isUploadedPicConfirmed) {
+                        validation = false;
+                        $('#ConfirmationErrorStep3').removeClass('hide');
+                    }
+                }
+                else if (currentIndex === 3) {
+                    var employeeType = $('#EmploymentTypeId').val();
+                    if (employeeType === "1") {
+                        if (!$('.GovrmentEmployeeCodeNumber').val().trim().length) {
+                            $("#GovrmentEmployeeCodeNumberError").html("Goverment Employee Code Number is required.");
+                            validation = false;
+                        } else {
+                            $("#GovrmentEmployeeCodeNumberError").html("");
+                        }
+                    }
+                }
+                else if (currentIndex == 5) {
+
+                    var isUploadedPicConfirmed = $("#isOfRightSizeStep6").is(':checked') && $("#isOfProperPositionStep6").is(':checked');
+
+                    if (!isUploadedPicConfirmed) {
+                        validation = false;
+                        $('#ConfirmationErrorStep6').removeClass('hide');
+                    }
+                }
+                else if (currentIndex == 6) {
+                    var paymentType = $('#PaymentTypeId').val();
+                    if (paymentType === "1") {
+                        validation = checkImage($('input[name="moneyReceiptImage"]'));
+                        if (!validation) {
+                            $('#MoneyReceiptUrlError').html('Bank Deposit Slip is required.');
+                            validation = false;
+                        }
+                        else {
+                            $('#MoneyReceiptUrlError').html('');
+                        }
+                    }
+                }
+
+                return $('#registration').valid() && validation;
+            }
+            return true;
+        },
+        onFinishing: function () {
+            $('#registration').validate().settings.ignore = ":disabled,:hidden";
+            var emailExists = true;
+
+            //if ($('input:radio[name="ApplicantStatus"]:checked').val() === "2") {
+            //    emailExists = isEmailExists($('#Email').val());
+            //    if (!emailExists)
+            //        $('#EmailError').html("Email already exists.");
+            //    else {
+            //        $('#EmailError').html("");
+            //    }
+            //}
+
+            emailExists = isEmailExists($('#Email').val());
+            if (!emailExists)
+                $('#EmailError').html("Email already exists.");
+            else {
+                $('#EmailError').html("");
+            }
+            var profilePictureError = checkImage($('#ProfilePicture'));
+            var signatureError = checkImage($('#Signature'));
+            var validation = profilePictureError && signatureError;
+
+            var istermsAndConditionsChecked = $("#termsAndConditions").is(':checked');
+
+            if (!istermsAndConditionsChecked) {
+                validation = false;
+                $('#ConfirmationErrorTermsAndConditions').removeClass('hide');
+            }
+
+            return $('#registration').valid() && emailExists && validation;
+        },
+        onFinished: function () {
+
+            var confirmation = confirm("Do You Want To Submit The Form?");
+            if (confirmation) {
+                $('#registration')
+                    .submit();
+            }
+        }
+    });
+    //=====================================================
+
+    //=========================FCPS-Final====================================
+    $("#wizardFCPSFinal").steps({
+        onStepChanging: function (event, currentIndex, newIndex) {
+            if (newIndex > currentIndex) {
+                $('#registration').validate().settings.ignore = ":disabled,:hidden";
+                var validation = true;
+                if (currentIndex === 0) {
+
+                    var value = $('input:radio[name="ApplicantStatus"]:checked').val();
+
+                    if (value == 1) { // Old Student
+                        $('#new-student').html('');
+                        //$('#MoneyReceipt_Amount').val('13500');
+                        $.ajax({
+                            type: "Get",
+                            url: "/Base/FeeAmountFCPSFinal",
+                            data: { programType: value },
+                            contentType: "application/json; charset=utf-8",
+                            dataType: "json",
+                            success: successFunc
+
+                        });
+                        sharedService.ajaxCall("/Base/IsTimeForProgram", "GET", { programType: 14 }).then(function (data) {
+                            validation = data.Eligibility;
+                            if (validation) {
+                                $('#Old-student-FCPS-1').html('');
+                            }
+                            else {
+                                $('#Old-student-FCPS-1').html('Sorry, You can not register for exam now. ' + data.Message);
+                            }
+
+                            if ($('#PenOrMenOrSen').val() == "") {
+                                $('#PenOrMenOrSenRequiredMessage').html('Please Enter Pen/Men/Sen No. to Proceed');
+                                validation = false;
+                            }
+                            else {
+                                $('#PenOrMenOrSenRequiredMessage').html('');
+                            }
+                        });
+
+                    }
+                    else if (value == 2) { // New Student
+                        //$('#MoneyReceipt_Amount').val('15000');
+                        $.ajax({
+                            type: "Get",
+                            url: "/Base/FeeAmountFCPSFinal",
+                            data: { programType: value },
+                            contentType: "application/json; charset=utf-8",
+                            dataType: "json",
+                            success: successFunc
+
+                        });
+                        sharedService.ajaxCall("/Base/IsTimeForProgram", "GET", { programType: 13 }).then(function (data) {
+                            validation = data.Eligibility;
+                            if (validation)
+                                $('#new-student').html('');
+                            else {
+                                $('#new-student').html('Sorry, You can not register for exam now. ' + data.Message);
+                            }
+                        });
+
+                    }
+                    else {
+                        validation = false;
+                    }
+
+                    function successFunc(data) {
+                        $('#MoneyReceipt_Amount').val(data);
+                    }
+                    var passingDateError = passingDurationDMY($("#PassingDate").val()) >= 365;
+                    if (!passingDateError) {
+                        $('#PassingDateError').html('You have to complete 1 year after passing MBBS/BDS to register.');
+                        validation = false;
+                    } else {
+                        $('#PassingDateError').html('');
+                    }
+                    if (validation) {
+                        ////Check Duplicate BMDC Number/////
+                        var existBMDCNumber = isBMDCNumberExists($('#BMDCRegistrationNumber').val(), $("#EnrollerTypeId").val());
+                        var barred = isBarredStudent($('#BMDCRegistrationNumber').val());
+
+                        if (!barred) {
+                            $('#BarredError').html('This BMDC number has been barred from registration. Please contact BCPS Administration');
+                            validation = false;
+                        } else {
+                            $('#BarredError').html('');
+                        }
+                        if (!existBMDCNumber) {
+                            $('#BMDCRegistrationError').html('BMDC Registration Number already exists.');
+                            validation = false;
+                        } else {
+                            $('#BMDCRegistrationError').html('');
+                        }
+                        var programType = $('#EnrollerTypeId').val();
+                        if (programType == '1') {
+                            var bmdcNumber = $('#BMDCRegistrationNumber').val();
+                            var regularExpression = GetRegularExpression(); //new RegExp(
+
+                            for (i = 0; i < regularExpression.length; i++) {
+                                var regex = new RegExp(regularExpression[i]);
+                                isItValid = regex.test(bmdcNumber);
+                                if (isItValid === true) { break; }
+                            }
+
+                            if (!isItValid) {
+                                $('#BMDCRegistrationValidationError').html('Invalid BMDC Number. It must not contain any space or special characters and it must start with a prefix');
+                                validation = false;
+                            }
+                            else {
+                                $('#BMDCRegistrationValidationError').html('');
+                            }
+
+                        } else {
+                            var regularExpression = /^\d+$/;
+                            var bmdcNumber = $('#BMDCRegistrationNumber').val();
+                            var isItValid = regularExpression.test(bmdcNumber);
+                            if (!isItValid) {
+                                $('#BMDCRegistrationValidationError').html('Invalid BMDC Number. It must not contain any space or special characters.');
+                                validation = false;
+                            }
+                            else {
+                                $('#BMDCRegistrationValidationError').html('');
+                            }
+                        }
+                        if (validation) {
+                            ////Check Certificates/////
+                            if ($('input:radio[name="ApplicantStatus"]:checked').val() == 2) {
+                                ////Check Certificates/////
+                                var mbbsCertificateError = checkImage($('#MBBSCertificate'));
+                                var bmdcCertificateError = checkImage($('#BMDCCertificate'));
+                                if (!mbbsCertificateError) {
+                                    $('#MBBSCertificateError').html('MBBS/BDS Certificate is Reqiured.');
+                                }
+                                else
+                                    $('#MBBSCertificateError').html('');
+                                if (!bmdcCertificateError) {
+                                    $('#BMDCCertificateError').html('BMDC Certificate is Reqiured.');
+                                }
+                                else
+                                    $('#BMDCCertificateError').html('');
+                                var isUploadedPicConfirmed = $("#isOfRightSizeStep1").is(':checked') && $("#isOfProperPositionStep1").is(':checked');
+                                validation = mbbsCertificateError && bmdcCertificateError && isUploadedPicConfirmed;
+
+                                if (!isUploadedPicConfirmed) {
+                                    $('#ConfirmationErrorStep1').removeClass('hide');
+                                }
+                                if (!validation) {
+                                    validation = false;
+                                } else {
+
+                                }
+                            }
+                        }
+                    }
+
+                }
+                else if (currentIndex == 1) {
+
+                    //validation = checkImage($('input[name="moneyReceiptImage"]'));
+                    //if (!validation) {
+                    //    $('#MoneyReceiptUrlError').html('Bank Deposit Slip is required.');
+                    //    validation = false;
+                    //}
+                    //else {
+                    //    $('#MoneyReceiptUrlError').html('');
+                    //}
+                    //var isUploadedPicConfirmed = $("#isOfRightSizeStep2").is(':checked') && $("#isOfProperPositionStep2").is(':checked');
+
+                    //if (!isUploadedPicConfirmed) {
+                    //    validation = false;
+                    //    $('#ConfirmationErrorStep2').removeClass('hide');
+                    //}
+                }
+                else if (currentIndex === 2) { // Enrolment Information
+                    if ($('input:radio[name="ApplicantStatus"]:checked').val() == 2) {
+                        validation = checkImage($('#PassingDocFCPS1'));
+                        if (!validation)
+                            $('#PassingDocFCPS1Error').html('Passing document of FCPS-1 is required.');
+                        else {
+                            $('#PassingDocFCPS1Error').html('');
+                        }
+                    }
+                    if ($(".confirmationStep3").hasClass('hide') != true) {
+                        var isUploadedPicConfirmed = $("#isOfRightSizeStep3").is(':checked') && $("#isOfProperPositionStep3").is(':checked');
+
+                        if (!isUploadedPicConfirmed) {
+                            validation = false;
+                            $('#ConfirmationErrorStep3').removeClass('hide');
+                        }
+                    }
+
+
+                }
+                else if (currentIndex === 3) {
+                    var employeeType = $('#EmploymentTypeId').val();
+                    if (employeeType === "1") {
+                        if (!$('.GovrmentEmployeeCodeNumber').val().trim().length) {
+                            $("#GovrmentEmployeeCodeNumberError").html("Goverment Employee Code Number is required.");
+                            validation = false;
+                        } else {
+                            $("#GovrmentEmployeeCodeNumberError").html("");
+                        }
+                    }
+
+                }
+                else if (currentIndex === 5) {
+                    var isUploadedPicConfirmed = $("#isOfRightSizeStep6").is(':checked') && $("#isOfProperPositionStep6").is(':checked');
+
+                    if (!isUploadedPicConfirmed) {
+                        validation = false;
+                        $('#ConfirmationErrorStep6').removeClass('hide');
+                    }
+                }
+                else if (currentIndex === 6) {
+                    var paymentType = $('#PaymentTypeId').val();
+                    if (paymentType === "1") {
+                        validation = checkImage($('input[name="moneyReceiptImage"]'));
+                        if (!validation) {
+                            $('#MoneyReceiptUrlError').html('Bank Deposit Slip is required.');
+                            validation = false;
+                        }
+                        else {
+                            $('#MoneyReceiptUrlError').html('');
+                        }
+                        var isUploadedPicConfirmed = $("#isOfRightSizeStep2").is(':checked') && $("#isOfProperPositionStep2").is(':checked');
+
+                        if (!isUploadedPicConfirmed) {
+                            validation = false;
+                            $('#ConfirmationErrorStep2').removeClass('hide');
+                        }
+                    }
+                }
+
+                return $('#registration').valid() && validation;
+            }
+            return true;
+        },
+        onFinishing: function () {
+            $('#registration').validate().settings.ignore = ":disabled,:hidden";
+            var emailExists = true;
+
+            //if ($('input:radio[name="ApplicantStatus"]:checked').val() === "2") {
+            //    emailExists = isEmailExists($('#Email').val());
+            //    if (!emailExists)
+            //        $('#EmailError').html("Email already exists.");
+            //    else {
+            //        $('#EmailError').html("");
+            //    }
+            //}
+
+            emailExists = isEmailExists($('#Email').val());
+            if (!emailExists)
+                $('#EmailError').html("Email already exists.");
+            else {
+                $('#EmailError').html("");
+            }
+            var profilePictureError = checkImage($('#ProfilePicture'));
+            var signatureError = checkImage($('#Signature'));
+            var validation = profilePictureError && signatureError;
+
+            var istermsAndConditionsChecked = $("#termsAndConditions").is(':checked');
+
+            if (!istermsAndConditionsChecked) {
+                validation = false;
+                $('#ConfirmationErrorTermsAndConditions').removeClass('hide');
+            }
+
+            return $('#registration').valid() && emailExists && validation;
+        },
+        onFinished: function () {
+            c = confirm("Do You Want To Submit The Form?");
+            if (c) {
+                $('#registration')
+                    .submit();
+            }
+
+
+        }
+    });
+    //======================================================
+
+    $('#MBBSCertificate').change(function () {
+        if (checkImage($(this)))
+            $('#MBBSCertificateError').html('');
+        else
+            $('#MBBSCertificateError').html('Select valid image and image size must be less or equal 300 KB.');
+    });
+
+    $('#BMDCCertificate').change(function () {
+        if (checkImage($(this)))
+            $('#BMDCCertificateError').html('');
+        else
+            $('#BMDCCertificateError').html('Select valid image and image size must be less or equal 300 KB.');
+    });
+
+    $('input[name="moneyReceiptImage"]').change(function () {
+        if (checkImage($(this)))
+            $('#MoneyReceiptUrlError').html('');
+        else
+            $('#MoneyReceiptUrlError').html('Select valid image and image size must be less or equal 300 KB.');
+    });
+    //$('input[name="passingDocFCPS1"]').change(function () {
+    //    if (checkImage($(this)))
+    //        $('#PassingDocFCPS1Error').html('');
+    //    else
+    //        $('#PassingDocFCPS1Error').html('Select valid image and image size must be less or equal 300 KB.');
+    //});
+
+    $('#ProfilePicture').change(function () {
+        if (checkImage($(this)))
+            $('#ProfilePictureError').html('');
+        else
+            $('#ProfilePictureError').html('Select valid image and image size must be less or equal 300 KB.');
+    });
+
+    $('#Signature').change(function () {
+        if (checkImage($(this)))
+            $('#SignatureError').html('');
+        else
+            $('#SignatureError').html('Select valid image and image size must be less or equal 300 KB.');
+    });
+
+    $('#PassingDocFCPS1').change(function () {
+        if (checkImage($(this)))
+            $('#PassingDocFCPS1Error').html('');
+        else
+            $('#PassingDocFCPS1Error').html('Select valid image and image size must be less or equal 300 KB.');
+    });
+
+    $('#PassingDocPreliFCPS2').change(function () {
+        if (checkImage($(this)))
+            $('#PassingDocPreliFCPS2Error').html('');
+        else
+            $('#PassingDocPreliFCPS2Error').html('Select valid image and image size must be less or equal 300 KB.');
+    });
+
+
+    function employmentTypeAction() {
+        var employeeType = parseInt($('#EmploymentTypeId').val());
+        if (employeeType == 1)
+            $('#GovrmentEmployeeCodeNumberField').show();
+        else
+            $('#GovrmentEmployeeCodeNumberField').hide();
+    }
+    employmentTypeAction();
+    $('#EmploymentTypeId').change(function () {
+        employmentTypeAction();
+    });
+
+    function paymentTypeAction() {
+        var paymentTypeId = parseInt($('#PaymentTypeId').val());
+        if (paymentTypeId == 1) {
+            $('#offlinePayment').show();
+            $('#onlinePayment').hide();
+            $('.confirmationStepTermsAndConditions').show();
+        }
+        else if (paymentTypeId == 2) {
+            $('#offlinePayment').hide();
+            $('#onlinePayment').show();
+            $('.confirmationStepTermsAndConditions').show();
+
+        } else {
+            $('#offlinePayment').hide();
+            $('#onlinePayment').hide();
+            $('.confirmationStepTermsAndConditions').hide();
+        }
+    }
+    paymentTypeAction();
+    $('#PaymentTypeId').change(function () {
+        paymentTypeAction();
+    });
+
+    function SubjectChangeAction() {
+        var value = $('input:radio[name="isChangeSubject"]:checked').val();
+        if (value == 1) {
+            $('.addAdditionalSubject').hide();
+            $('.changeSubject').show();
+        } else {
+            $('.changeSubject').hide();
+            $('.addAdditionalSubject').show();
+        }
+    }
+    function ApplicantStatusAction() {
+        var value = $('input:radio[name="ApplicantStatus"]:checked').val();
+        if (value == 1) {
+            $('.old-student').show();
+            $('.old-studentNoSubChange').show();
+            $('#dvMBBSCertificate').hide();
+            $('#dvBMDCCertificate').hide();
+            $('#divPassingDocFCPS1').hide();
+        } else if (value == 2) {
+            $('.old-student').hide();
+            $('.addAdditionalSubject').hide();
+            $('.changeSubject').hide();
+            $('.old-studentNoSubChange').hide();
+            $('#dvMBBSCertificate').show();
+            $('#dvBMDCCertificate').show();
+            $('#divPassingDocFCPS1').show();
+          
+        } else {
+            $('.old-student').hide();
+            $('.addAdditionalSubject').hide();
+            $('.changeSubject').hide();
+            $('.old-studentNoSubChange').show();
+            $('#dvMBBSCertificate').hide();
+            $('#dvBMDCCertificate').hide();
+            $('#divPassingDocFCPS1').hide();
+        }
+    }
+
+    ApplicantStatusAction();
+    $('input:radio[name="ApplicantStatus"]').click(function () {
+        ApplicantStatusAction();
+    });
+   
+    $('input:radio[name="isChangeSubject"]').click(function () {
+        SubjectChangeAction();
+    });
+
+
+
+    $('#CollegeId').change(function () {
+        var id = $(this).val();
+        if (id === "-1")
+            $('.extraCollege').show();
+        else
+            $('.extraCollege').hide();
+    });
+
+    $('#PassingDate').datepicker({
+        format: 'dd/mm/yyyy',
+        "setDate": new Date(),
+        "autoclose": true,
+        minDate: Date.parse("1900-01-01"),
+        maxDate: Date.parse("2100-01-01"),
+        yearRange: "1900:+nn"
+
+    });
+
+
+  
+    //$('#BMDCValidityUpto').val('');
+    $('#BMDCValidityUpto').datepicker({
+        format: 'dd/mm/yyyy',
+        "setDate": new Date(),
+        "autoclose": true,
+        minDate: Date.parse("1900-01-01"),
+        maxDate: Date.parse("2100-01-01"),
+        yearRange: "1900:+nn"
+    });
+
+
+
+    $('#DateOfBirth').datepicker({
+        format: 'dd/mm/yyyy',
+        "setDate": new Date(),
+        "autoclose": true,
+        minDate: Date.parse("1900-01-01"),
+        maxDate: Date.parse("2100-01-01"),
+        yearRange: "1900:+nn"
+    });
+
+
+
+
+
+    function passingDuration(passingDateString) {
+        passingDateString = passingDateString.split('/');
+        var paassingDate = new Date(passingDateString[2], passingDateString[0] - 1, passingDateString[1]); // Year, Month, Date
+        var today = new Date();
+        var currentDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        return (currentDate - paassingDate) / (1000 * 60 * 60 * 24);
+    }
+    function passingDurationDMY(passingDateString) {
+        passingDateString = passingDateString.split('/');
+        var paassingDate = new Date(passingDateString[2], passingDateString[1] - 1, passingDateString[0]); // Year,Month, day
+
+        var today = new Date();
+        var currentDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+        return (currentDate - paassingDate) / (1000 * 60 * 60 * 24);
+    }
+    $('.PassingDate').on("change", function () {
+        var day = passingDurationDMY($(".PassingDate").val());
+        if (day < 365)
+            $('#PassingDateError').html('You have to complete 1 year after passing MBBS/BDS to register.');
+        else {
+            $('#PassingDateError').html("");
+        }
+    });
+
+    function setCollege(collegeId) {
+        sharedService.ajaxCall("/Account/GetCollegebyId", "GET", { collegeId: collegeId }).then(function (data) {
+            if (data.EntryType === 1) {
+                $('#CollegeId').val(-1);
+                $('#OtherCollege').show();
+                $('#OtherCollege').val(data.CollegeName);
+                $("#OtherCollege").attr("disabled", "disabled");
+            }
+            else
+                $('#CollegeId').val(data.CollegeId);
+
+            $("#CollegeId").attr("disabled", "disabled");
+        });
+    }
+
+    function onDropdownValueChanges(changedDropdown, actionName, addressId, defaultMessage) {
+        sharedService.ajaxCall("/Account/" + actionName, "GET", { addressId: addressId }).then(function (thanas) {
+            changedDropdown.empty();
+            changedDropdown.append($('<option value="">' + defaultMessage + '</option>'));
+            $.each(thanas, function (key, value) {
+                changedDropdown.append($('<option value=' + value.Value + '>' + value.Text + '</option>'));
+            });
+        });
+        $('option[value="-1"]', changedDropdown).prop('selected', true);
+    }
+
+    function getOldStudentInformation(actionName, formData, callback) {
+        sharedService.ajaxCall("/Account/" + actionName, "GET", { enroller: formData }).then(function (data) {
+            callback(data);
+        });
+    }
+
+    function GetPresentAddress(registrationNumber) {
+        var existValue;
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '/Account/IsBMDCNumberExists',
+            async: false,
+            data: { bmdcRegistratioNumber: registrationNumber },
+            success: function (data) {
+                existValue = data;
+            }
+        });
+        return existValue;
+    }
+    function isBMDCNumberExists(registrationNumber, enrollerTypeId) {
+        var existValue;
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '/Account/IsBMDCNumberExists',
+            async: false,
+            data: { bmdcRegistratioNumber: registrationNumber, enrollerTypeId: enrollerTypeId },
+            success: function (data) {
+                existValue = data;
+            }
+        });
+        return existValue;
+    }
+    function GetRegularExpression() {
+        var existValue;
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '/BmdcRegEx/GetRegularExpression',
+            async: false,
+            success: function (data) {
+                existValue = data;
+            }
+        });
+        return existValue;
+    }
+    function isBarredStudent(registrationNumber) {
+        var existValue;
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '/Account/isBarredStudent',
+            async: false,
+            data: { bmdcRegistratioNumber: registrationNumber },
+            success: function (data) {
+                existValue = data;
+            }
+        });
+        return existValue;
+    }
+
+    //function reasonOfBarring(registrationNumber) {
+    //    var existValue;
+    //    $.ajax({
+    //        type: 'GET',
+    //        contentType: "application/json; charset=utf-8",
+    //        url: '/Account/reasonOfBarring',
+    //        async: false,
+    //        data: { bmdcRegistratioNumber: registrationNumber },
+    //        success: function (data) {
+    //            existValue = data;
+    //        }
+    //    });
+    //    return existValue;
+    //}
+
+    function isStudentExists(registrationNumber, key) {
+        var existValue;
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '/Account/IsStudentExists',
+            async: false,
+            data: { bmdcRegistratioNumber: registrationNumber, secretKey: key },
+            success: function (data) {
+                existValue = data;
+            }
+        });
+        return existValue;
+    }
+
+    function isEmailExists(email) {
+  
+        var existValue;
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '/Account/IsEmailExists',
+            async: false,
+            data: { email: email },
+            success: function (data) {
+                existValue = data;
+            }
+        });
+        return existValue;
+    }
+
+
+    // Start FCPS-1 registration process
+
+    $("#fcps1Wizard").steps({
+        onStepChanging: function (event, currentIndex, newIndex) {
+            $('#fcps1Registration').validate().settings.ignore = ":disabled,:hidden";
+
+            if (currentIndex > newIndex) {
+                return true;
+            }
+
+            if ($('#fcps1Registration').valid()) {
+                if (currentIndex === 0) {
+                    var isSpecialityRegistered = isRegisteredForSpeciality($('#EnrollerId').val(), $('#specialityId').val());
+                    if (isSpecialityRegistered == true) {
+                        $("#errorMessage").html('<div class="alert alert-danger col-sm-12"> You have already registered in this subject.</div>');
+                        return false;
+                    } else {
+                        $("#errorMessage").html('');
+                        $("#SpecialityCode").val(isSpecialityRegistered);
+                        return true;
+                    }
+                }
+            }
+            return $('#fcps1Registration').valid();
+        },
+        onFinishing: function () {
+            $('#fcps1Registration').validate().settings.ignore = ":disabled,:hidden";
+            var validation = checkImage($('#MoneyReceiptUrl'));
+            return $('#fcps1Registration').valid() && validation;
+        },
+        onFinished: function () {
+            $('#fcps1Registration').submit();
+        }
+    });
+    //=====================FCPS-2 Registration Process=============
+    $("#fcps2Wizard").steps({
+        onStepChanging: function (event, currentIndex, newIndex) {
+            $('#fcps2Registration').validate().settings.ignore = ":disabled,:hidden";
+
+            if (currentIndex > newIndex) {
+                return true;
+            }
+
+            if ($('#fcps2Registration').valid()) {
+                if (currentIndex === 0) {
+                    var isSpecialityRegistered = isRegisteredForSpeciality($('#EnrollerId').val(), $('#specialityId').val());
+                    if (isSpecialityRegistered == true) {
+                        $("#errorMessage").html('<div class="alert alert-danger col-sm-12"> You have already registered in this subject.</div>');
+                        return false;
+                    } else {
+                        $("#errorMessage").html('');
+                        $("#SpecialityCode").val(isSpecialityRegistered);
+                        return true;
+                    }
+                }
+            }
+            return $('#fcps2Registration').valid();
+        },
+        onFinishing: function () {
+            $('#fcps2Registration').validate().settings.ignore = ":disabled,:hidden";
+            var validation = checkImage($('#MoneyReceiptUrl'));
+            return $('#fcps2Registration').valid() && validation;
+        },
+        onFinished: function () {
+            $('#fcps2Registration').submit();
+        }
+    });
+
+    //==============================================================
+    //=====================FCPS-2 Special Registration Process=============
+    $("#fcps2SpecialWizard").steps({
+        onStepChanging: function (event, currentIndex, newIndex) {
+            $('#fcps2SpecialRegistration').validate().settings.ignore = ":disabled,:hidden";
+
+            if (currentIndex > newIndex) {
+                return true;
+            }
+
+            if ($('#fcps2SpecialRegistration').valid()) {
+                if (currentIndex === 0) {
+                    var isSpecialityRegistered = isRegisteredForSpeciality($('#EnrollerId').val(), $('#specialityId').val());
+                    if (isSpecialityRegistered == true) {
+                        $("#errorMessage").html('<div class="alert alert-danger col-sm-12"> You have already registered in this subject.</div>');
+                        return false;
+                    } else {
+                        $("#errorMessage").html('');
+                        $("#SpecialityCode").val(isSpecialityRegistered);
+                        return true;
+                    }
+                }
+            }
+            return $('#fcps2SpecialRegistration').valid();
+        },
+        onFinishing: function () {
+            $('#fcps2SpecialRegistration').validate().settings.ignore = ":disabled,:hidden";
+            var validation = checkImage($('#MoneyReceiptUrl'));
+            return $('#fcps2SpecialRegistration').valid() && validation;
+        },
+        onFinished: function () {
+            $('#fcps2SpecialRegistration').submit();
+        }
+    });
+
+    //==============================================================
+    //=====================Preli FCPS-2 Registration Process=============
+    $("#Prelifcps2Wizard").steps({
+        onStepChanging: function (event, currentIndex, newIndex) {
+            $('#Prelifcps2Registration').validate().settings.ignore = ":disabled,:hidden";
+
+            if (currentIndex > newIndex) {
+                return true;
+            }
+
+            if ($('#Prelifcps2Registration').valid()) {
+                if (currentIndex === 0) {
+                    var isSpecialityRegistered = isRegisteredForSpeciality($('#EnrollerId').val(), $('#specialityId').val());
+                    if (isSpecialityRegistered == true) {
+                        $("#errorMessage").html('<div class="alert alert-danger col-sm-12"> You have already registered in this subject.</div>');
+                        return false;
+                    } else {
+                        $("#errorMessage").html('');
+                        $("#SpecialityCode").val(isSpecialityRegistered);
+                        return true;
+                    }
+                }
+            }
+            return $('#Prelifcps2Registration').valid();
+        },
+        onFinishing: function () {
+            $('#Prelifcps2Registration').validate().settings.ignore = ":disabled,:hidden";
+            var validation = checkImage($('#MoneyReceiptUrl'));
+            return $('#Prelifcps2Registration').valid() && validation;
+        },
+        onFinished: function () {
+            $('#Prelifcps2Registration').submit();
+        }
+    });
+
+    //==============================================================
+    //=====================MCPS Registration Process=============
+    $("#MCPSWizard").steps({
+        onStepChanging: function (event, currentIndex, newIndex) {
+            $('#MCPSRegistration').validate().settings.ignore = ":disabled,:hidden";
+
+            if (currentIndex > newIndex) {
+                return true;
+            }
+   
+            if ($('#MCPSRegistration').valid()) {
+                if (currentIndex === 0) {
+                    var isSpecialityRegistered = isRegisteredForSpeciality($('#EnrollerId').val(), $('#specialityId').val());
+                    if (isSpecialityRegistered == true) {
+                        $("#errorMessage").html('<div class="alert alert-danger col-sm-12"> You have already registered in this subject.</div>');
+                        return false;
+                    } else {
+                        $("#errorMessage").html('');
+                        $("#SpecialityCode").val(isSpecialityRegistered);
+                        return true;
+                    }
+                }
+            }
+            return $('#MCPSRegistration').valid();
+        },
+        onFinishing: function () {
+            $('#MCPSRegistration').validate().settings.ignore = ":disabled,:hidden";
+            var validation = checkImage($('#MoneyReceiptUrl'));
+            return $('#MCPSRegistration').valid() && validation;
+        },
+        onFinished: function () {
+            $('#MCPSRegistration').submit();
+        }
+    });
+
+    //==============================================================
+
+
+    function isRegisteredForSpeciality(enrollerId, specialityId) {
+        var isRegistered;
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '/FCPS1/IsRegisteredForSpeciality',
+            async: false,
+            data: { enrollerId: enrollerId, specialityId: specialityId },
+            success: function (data) {
+                isRegistered = data;
+            }
+        });
+        return isRegistered;
+    }
+
+    // End FCPS-1 registration process
+
+    $('#reExam').click(function () {
+        var validation = true;
+        var paymentType = $('#PaymentTypeId').val();
+
+        if (paymentType === "1") {
+            validation = checkImage($('#MoneyReceiptUrl'));
+        }
+        
+        if ($('#reExamFCPS1').valid() && validation)
+            $('#reExamFCPS1').submit();
+    });
+
+    // End FCPS-2 registration process
+
+    $('#reExamFCPS2Btn').click(function () {
+        var validation = true;
+        var paymentType = $('#PaymentTypeId').val();
+
+        if (paymentType === "1") {
+            validation = checkImage($('#MoneyReceiptUrl'));
+        }
+
+        if ($('#reExamFCPS2').valid() && validation)
+            $('#reExamFCPS2').submit();
+    });
+
+    // End Preliminary FCPS registration process
+
+    $('#reExamSpecializedSpecialityBtn').click(function () {
+        var validation = true;
+        var paymentType = $('#PaymentTypeId').val();
+
+        if (paymentType === "1") {
+            validation = checkImage($('#MoneyReceiptUrl'));
+        }
+
+        if ($('#reExamSpecializedSpeciality').valid() && validation)
+            $('#reExamSpecializedSpeciality').submit();
+    });
+
+    $('#reExamPreliFCPS2Btn').click(function () {
+        var validation = true;
+        var paymentType = $('#PaymentTypeId').val();
+
+        if (paymentType === "1") {
+            validation = checkImage($('#MoneyReceiptUrl'));
+        }
+
+        if ($('#reExamPreliFCPS2').valid() && validation)
+            $('#reExamPreliFCPS2').submit();
+    });
+
+    // End Preliminary MCPS registration process
+
+    $('#reExamMCPSBtn').click(function () {
+        var validation = true;
+        var paymentType = $('#PaymentTypeId').val();
+
+        if (paymentType === "1") {
+            validation = checkImage($('#MoneyReceiptUrl'));
+        }
+
+        if ($('#reExamMCPS').valid() && validation)
+            $('#reExamMCPS').submit();
+    });
+
+    $('#reExamFCPSFinalBtn').click(function () {
+        var validation = true;
+        var paymentType = $('#PaymentTypeId').val();
+
+        if (paymentType === "1") {
+            validation = checkImage($('#MoneyReceiptUrl'));
+        }
+
+        if ($('#reExamFCPSFinal').valid() && validation)
+            $('#reExamFCPSFinal').submit();
+    });
+
+    $('#reExamMidtermFCPSBtn').click(function () {
+        var validation = true;
+        var paymentType = $('#PaymentTypeId').val();
+
+        if (paymentType === "1") {
+            validation = checkImage($('#MoneyReceiptUrl'));
+        }
+
+        if ($('#reExamMidtermFCPS').valid() && validation)
+            $('#reExamMidtermFCPS').submit();
+    });
+
+    function checkImage(element) {
+        if (element[0].files.length > 0) {
+            var file = element[0].files[0];
+            if (!startsWith(file.type, "image") || file.size > 300 * 1024)
+                return false;
+
+            return true;
+        }
+        return false;
+    }
+
+    function startsWith(imageType, type) {
+        for (var i = 0; i < type.length; i++) {
+            if (type[i].toLowerCase() != imageType[i].toLowerCase())
+                return false;
+        }
+        return true;
+    }
+
+    // start FCPS-I subject Change function
+
+    $("#fcps1SubjectChangeWizard").steps({
+        onStepChanging: function (event, currentIndex, newIndex) {
+            $('#fcps1SubjectChange').validate().settings.ignore = ":disabled,:hidden";
+
+            if (currentIndex > newIndex) {
+                return true;
+            }
+
+            if ($('#fcps1SubjectChange').valid()) {
+                if (currentIndex === 0) {
+                    var isCanChange = isCanChangeToSelectedSpeciality($('#EnrollerId').val(), $('#selectedSpecialityId').val());
+                    if (isCanChange == true) {
+                        $("#subjectChangeErrorMessage").html('<div class="alert alert-danger col-sm-12"> You select same speciality that allready changed.</div>');
+                        return false;
+                    } else {
+                        $("#subjectChangeErrorMessage").html('');
+                        //return true;
+                    }
+                }
+            }
+            return $('#fcps1SubjectChange').valid();
+        },
+        onFinishing: function () {
+            $('#fcps1SubjectChange').validate().settings.ignore = ":disabled,:hidden";
+            let valid = $('#fcps1SubjectChange').valid();
+            let validImg = checkImage($('#MoneyReceiptUrl'));
+            var paymentTypeId = parseInt($('#PaymentTypeId').val());
+            var istermsAndConditionsChecked = $("#termsAndConditions").is(':checked');
+
+            if (!istermsAndConditionsChecked) {
+                $('#ConfirmationErrorTermsAndConditions').removeClass('hide');
+            }
+
+            return valid && (paymentTypeId == 2 || validImg) && istermsAndConditionsChecked; // 2 for online payment
+        },
+        onFinished: function () {
+            confirmation = confirm("Do You Want To Submit The Form?");
+            if (confirmation) {
+                $('#fcps1SubjectChange').submit();
+            }
+        }
+    });
+
+    $("#fcps1AdditionalSubjectWizard").steps({
+        onStepChanging: function (event, currentIndex, newIndex) {
+            $('#fcps1AdditionalSubject').validate().settings.ignore = ":disabled,:hidden";
+
+            if (currentIndex > newIndex) {
+                return true;
+            }
+
+            if ($('#fcps1AdditionalSubject').valid()) {
+                if (currentIndex === 0) {
+                    var isCanChange = isCanChangeToSelectedAdditionalSpeciality($('#EnrollerId').val(), $('#selectedSpecialityId').val());
+                    if (isCanChange == true) {
+                        $("#fcps1AdditionalSubjectErrorMessage").html('<div class="alert alert-danger col-sm-12"> You have selcted speciality that has already been changed.</div>');
+                        return false;
+                    } else {
+                        $("#fcps1AdditionalSubjectErrorMessage").html('');
+                        //return true;
+                    }
+                }
+            }
+            return $('#fcps1AdditionalSubject').valid();
+        },
+        onFinishing: function () {
+            $('#fcps1AdditionalSubject').validate().settings.ignore = ":disabled,:hidden";
+            let valid = $('#fcps1AdditionalSubject').valid();
+            let validImg = checkImage($('#MoneyReceiptUrl'));
+            var paymentTypeId = parseInt($('#PaymentTypeId').val());
+            var istermsAndConditionsChecked = $("#termsAndConditions").is(':checked');
+
+            if (!istermsAndConditionsChecked) {
+                $('#ConfirmationErrorTermsAndConditions').removeClass('hide');
+            }
+
+            return valid && (paymentTypeId == 2 || validImg) && istermsAndConditionsChecked; // 2 for online payment
+        },
+        onFinished: function () {
+            confirmation = confirm("Do You Want To Submit The Form?");
+            if (confirmation) {
+                $('#fcps1AdditionalSubject').submit();
+            }
+        }
+    });
+
+    // Start FCPS Final Additional Subject Function
+    $("#fcpsFinalAdditionalSubjectWizard").steps({
+        onStepChanging: function (event, currentIndex, newIndex) {
+            $('#fcpsFinalAdditionalSubject').validate().settings.ignore = ":disabled,:hidden";
+
+            if (currentIndex > newIndex) {
+                return true;
+            }
+
+            if ($('#fcpsFinalAdditionalSubject').valid()) {
+                if (currentIndex === 0) {
+                    var isCanChange = isCanChangeToSelectedAdditionalSpecialityForFinal($('#EnrollerId').val(), $('#selectedSpecialityId').val());
+                    if (isCanChange == true) {
+                        $("#fcpsFinalAdditionalSubjectErrorMessage").html('<div class="alert alert-danger col-sm-12"> You select same speciality that allready changed.</div>');
+                        return false;
+                    } else {
+                        $("#fcpsFinalAdditionalSubjectErrorMessage").html('');
+                        //return true;
+                    }
+                }
+            }
+            return $('#fcpsFinalAdditionalSubject').valid();
+        },
+        onFinishing: function () {
+            $('#fcpsFinalAdditionalSubject').validate().settings.ignore = ":disabled,:hidden";
+            let valid = $('#fcpsFinalAdditionalSubject').valid();
+            let validImg = checkImage($('#MoneyReceiptUrl'));
+            var paymentTypeId = parseInt($('#PaymentTypeId').val());
+            var istermsAndConditionsChecked = $("#termsAndConditions").is(':checked');
+
+            if (!istermsAndConditionsChecked) {
+                $('#ConfirmationErrorTermsAndConditions').removeClass('hide');
+            }
+
+            return valid && (paymentTypeId == 2 || validImg) && istermsAndConditionsChecked; // 2 for online payment
+        },
+        onFinished: function () {
+            confirmation = confirm("Do You Want To Submit The Form?");
+            if (confirmation) {
+                $('#fcpsFinalAdditionalSubject').submit();
+            }
+        }
+    });
+    
+    // start FCPS-II subject Change function
+    $("#fcps2SubjectChangeWizard").steps({
+        onStepChanging: function (event, currentIndex, newIndex) {
+            $('#fcps2SubjectChange').validate().settings.ignore = ":disabled,:hidden";
+
+            if (currentIndex > newIndex) {
+                return true;
+            }
+
+            if ($('#fcps2SubjectChange').valid()) {
+                if (currentIndex === 0) {
+                    var isCanChange = isCanChangeToSelectedSpeciality($('#EnrollerId').val(), $('#selectedSpecialityId').val());
+                    if (isCanChange == true) {
+                        $("#subjectChangeErrorMessage").html('<div class="alert alert-danger col-sm-12"> You select same speciality that allready changed.</div>');
+                        return false;
+                    } else {
+                        $("#subjectChangeErrorMessage").html('');
+                        //return true;
+                    }
+                }
+            }
+            return $('#fcps2SubjectChange').valid();
+        },
+        onFinishing: function () {
+            $('#fcps2SubjectChange').validate().settings.ignore = ":disabled,:hidden";
+            return $('#fcps2SubjectChange').valid() && checkImage($('#MoneyReceiptUrl'));
+        },
+        onFinished: function () {
+            $('#fcps2SubjectChange').submit();
+        }
+    });
+
+    // start FCPS-II Special subject Change function
+    $("#fcps2SpecialSubjectChangeWizard").steps({
+        onStepChanging: function (event, currentIndex, newIndex) {
+            $('#fcps2SpecialSubjectChange').validate().settings.ignore = ":disabled,:hidden";
+
+            if (currentIndex > newIndex) {
+                return true;
+            }
+
+            if ($('#fcps2SpecialSubjectChange').valid()) {
+                if (currentIndex === 0) {
+                    var isCanChange = isCanChangeToSelectedSpeciality($('#EnrollerId').val(), $('#selectedSpecialityId').val());
+                    if (isCanChange == true) {
+                        $("#subjectChangeErrorMessage").html('<div class="alert alert-danger col-sm-12"> You select same speciality that allready changed.</div>');
+                        return false;
+                    } else {
+                        $("#subjectChangeErrorMessage").html('');
+                        //return true;
+                    }
+                }
+            }
+            return $('#fcps2SpecialSubjectChange').valid();
+        },
+        onFinishing: function () {
+            $('#fcps2SpecialSubjectChange').validate().settings.ignore = ":disabled,:hidden";
+            return $('#fcps2SpecialSubjectChange').valid() && checkImage($('#MoneyReceiptUrl'));
+        },
+        onFinished: function () {
+            $('#fcps2SpecialSubjectChange').submit();
+        }
+    });
+
+    // start Preli FCPS-II subject Change function
+    $("#Prelifcps2SpecialSubjectChangeWizard").steps({
+        onStepChanging: function (event, currentIndex, newIndex) {
+            $('#Prelifcps2SubjectChange').validate().settings.ignore = ":disabled,:hidden";
+
+            if (currentIndex > newIndex) {
+                return true;
+            }
+
+            if ($('#Prelifcps2SubjectChange').valid()) {
+                if (currentIndex === 0) {
+                    var isCanChange = isCanChangeToSelectedSpeciality($('#EnrollerId').val(), $('#selectedSpecialityId').val());
+                    if (isCanChange == true) {
+                        $("#subjectChangeErrorMessage").html('<div class="alert alert-danger col-sm-12"> You select same speciality that allready changed.</div>');
+                        return false;
+                    } else {
+                        $("#subjectChangeErrorMessage").html('');
+                        //return true;
+                    }
+                }
+            }
+            return $('#Prelifcps2SubjectChange').valid();
+        },
+        onFinishing: function () {
+            $('#Prelifcps2SubjectChange').validate().settings.ignore = ":disabled,:hidden";
+            return $('#Prelifcps2SubjectChange').valid() && checkImage($('#MoneyReceiptUrl'));
+        },
+        onFinished: function () {
+            $('#Prelifcps2SubjectChange').submit();
+        }
+    });
+
+    // start MCPS Special subject Change function
+    $("#MCPSSubjectChangeWizard").steps({
+        onStepChanging: function (event, currentIndex, newIndex) {
+            $('#MCPSSubjectChange').validate().settings.ignore = ":disabled,:hidden";
+
+            if (currentIndex > newIndex) {
+                return true;
+            }
+            if ($('#MCPSSubjectChange').valid()) {
+                if (currentIndex === 0) {
+                    var isCanChange = isCanChangeToSelectedSpeciality($('#EnrollerId').val(), $('#selectedSpecialityId').val(), true);
+                    if (isCanChange == true) {
+                        $("#subjectChangeErrorMessage").html('<div class="alert alert-danger col-sm-12"> You select same speciality that allready changed.</div>');
+                        return false;
+                    } else {
+                        $("#subjectChangeErrorMessage").html('');
+                        //return true;
+                    }
+                }
+            }
+            return $('#MCPSSubjectChange').valid();
+        },
+        onFinishing: function () {
+            $('#MCPSSubjectChange').validate().settings.ignore = ":disabled,:hidden";
+            let valid = $('#MCPSSubjectChange').valid();
+            let validImg = checkImage($('#MoneyReceiptUrl'));
+            var paymentTypeId = parseInt($('#PaymentTypeId').val());
+            var istermsAndConditionsChecked = $("#termsAndConditions").is(':checked');
+
+            if (!istermsAndConditionsChecked) {
+                $('#ConfirmationErrorTermsAndConditions').removeClass('hide');
+            }
+
+            return valid && (paymentTypeId == 2 || validImg) && istermsAndConditionsChecked; // 2 for online payment
+        },
+        onFinished: function () {
+            confirmation = confirm("Do You Want To Submit The Form?");
+            if (confirmation) {
+                $('#MCPSSubjectChange').submit();
+            }
+        }
+    });
+
+    $("#MCPSAdditionalSubjectWizard").steps({
+        onStepChanging: function (event, currentIndex, newIndex) {
+            $('#MCPSAdditionalSubject').validate().settings.ignore = ":disabled,:hidden";
+
+            if (currentIndex > newIndex) {
+                return true;
+            }
+
+            if ($('#MCPSAdditionalSubject').valid()) {
+                if (currentIndex === 0) {
+                    var isCanChange = isCanChangeToSelectedSpeciality($('#EnrollerId').val(), $('#selectedSpecialityId').val(), true);
+                    if (isCanChange == true) {
+                        $("#MCPSAdditionalSubjectErrorMessage").html('<div class="alert alert-danger col-sm-12"> You have selected a speciality that already exsists in your registration or subject change.</div>');
+                        return false;
+                    } else {
+                        $("#MCPSAdditionalSubjectErrorMessage").html('');
+                        //return true;
+                    }
+                }
+            }
+            return $('#MCPSAdditionalSubject').valid();
+        },
+        onFinishing: function () {
+            $('#MCPSAdditionalSubject').validate().settings.ignore = ":disabled,:hidden";
+            let valid = $('#MCPSAdditionalSubject').valid();
+            let validImg = checkImage($('#MoneyReceiptUrl'));
+            var paymentTypeId = parseInt($('#PaymentTypeId').val());
+            var istermsAndConditionsChecked = $("#termsAndConditions").is(':checked');
+
+            if (!istermsAndConditionsChecked) {
+                $('#ConfirmationErrorTermsAndConditions').removeClass('hide');
+            }
+
+            return valid && (paymentTypeId == 2 || validImg) && istermsAndConditionsChecked; // 2 for online payment
+        },
+        onFinished: function () {
+            confirmation = confirm("Do You Want To Submit The Form?");
+            if (confirmation) {
+                $('#MCPSAdditionalSubject').submit();
+            }
+        }
+    });
+
+    $('#MoneyReceiptUrl').change(function () {
+        //checkImage("MBBSCertificate", this.files[0]);
+        //var file = this.files[0];
+        if (checkImage($(this)))
+            $('#MoneyReceiptUrlError').html('');
+        else
+            $('#MoneyReceiptUrlError').html('Select valid image and image size must be less or equal 300 KB.');
+    });
+
+    function isCanChangeToSelectedSpeciality(enrollerId, selectedSpecialityId, isMCPS) {
+        var isCanChange;
+        var url = isMCPS == true ? '/MCPS/IsRegisteredForSpeciality' : '/FCPS1/IsRegisteredForSpeciality';
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: url,
+            async: false,
+            data: { enrollerId: enrollerId, specialityId: selectedSpecialityId },
+            success: function (data) {
+                isCanChange = data;
+            }
+        });
+        return isCanChange;
+    }
+
+    function isCanChangeToSelectedAdditionalSpeciality(enrollerId, selectedSpecialityId, isMCPS) {
+        var isCanChange;
+        var url = isMCPS == true ? '/MCPS/IsRegisteredForSpeciality' : '/FCPS1/IsRegisteredForAdditionalSpeciality';
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: url,
+            async: false,
+            data: { enrollerId: enrollerId, specialityId: selectedSpecialityId },
+            success: function (data) {
+                isCanChange = data;
+            }
+        });
+        return isCanChange;
+    }
+
+    function isCanChangeToSelectedAdditionalSpecialityForFinal(enrollerId, selectedSpecialityId) {
+        var isCanChange;
+        var url = '/FCPSFinal/IsRegisteredForAdditionalSpeciality';
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: url,
+            async: false,
+            data: { enrollerId: enrollerId, specialityId: selectedSpecialityId },
+            success: function (data) {
+                isCanChange = data;
+            }
+        });
+        return isCanChange;
+    }
+
+    // End FCPS-I Subject change function
+
+    // Start FCPS-I Payment function
+
+    $('#Amount').val('');
+
+    $('#DepositDate').val('');
+
+    $('#DepositDate').datepicker({
+        format: 'dd/mm/yyyy',
+        "setDate": new Date(),
+        "autoclose": true,
+        minDate: Date.parse("1900-01-01"),
+        maxDate: Date.parse("2100-01-01"),
+        yearRange: "1900:+nn"
+    });
+
+    function BankAction() {
+        var selectedItem = $('#BankId').val();
+        var targetId = $("#BranchId");
+        cascadingBranchList(selectedItem, targetId);
+    }
+
+    BankAction();
+    $('#BankId').change(function () {
+    
+        BankAction();
+    });
+
+    function cascadingBranchList(selectedBankId, targetId) {
+ 
+        var statesProgress = $("#states-loading-progress");
+        statesProgress.show();
+        if (selectedBankId != "") {
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '/FCPS1/SelectBranchByBankId',
+                async: false,
+                data: { bankId: selectedBankId },
+                success: function (data) {
+                    targetId.html('<option value="">Select a Branch</option>');
+                    $.each(data, function (key, value) {
+                        targetId.append($('<option value=' + value.Value + '>' + value.Text + '</option>'));
+                    });
+                    statesProgress.hide();
+                },
+                error: function () {
+                    targetId.html('<option value="">Select a Branch</option>');
+                }
+            });
+        } else {
+            targetId.html('<option value="">Select a Branch</option>');
+            statesProgress.delay(1000).hide("slow");
+        }
+    }
+
+    // start MCPS subject Change function
+
+    $("#mcpsSubjectChangeWizard").steps({
+        onStepChanging: function (event, currentIndex, newIndex) {
+            $('#mcpsSubjectChange').validate().settings.ignore = ":disabled,:hidden";
+
+            if (currentIndex > newIndex)
+                return true;
+
+            if ($('#mcpsSubjectChange').valid()) {
+                if (currentIndex === 0) {
+                    var isCanChange = isCanChangeToSelectedSpecialityForMcps($('#EnrollerId').val(), $('#selectedSpecialityId').val(), $('#PreviousSpecialityId').val());
+                    if (isCanChange == 2) {
+                        $("#subjectChangeErrorMessage").html('<div class="alert alert-danger col-sm-12"> You select same speciality that allready registered.</div>');
+                        return false;
+                    } else if (isCanChange == 3) {
+                        $("#subjectChangeErrorMessage").html('<div class="alert alert-danger col-sm-12"> You select speciality that allready passed.</div>');
+                        return false;
+                    } else {
+                        $("#subjectChangeErrorMessage").html('');
+                        //return true;
+                    }
+                }
+                else if (currentIndex === 2) {
+
+                }
+            }
+            return $('#mcpsSubjectChange').valid();
+        },
+        onFinishing: function () {
+            $('#mcpsSubjectChange').validate().settings.ignore = ":disabled,:hidden";
+            return $('#mcpsSubjectChange').valid();
+        },
+        onFinished: function () {
+            $('#mcpsSubjectChange').submit();
+        }
+    });
+
+    function isCanChangeToSelectedSpecialityForMcps(enrollerId, selectedSpecialityId, previousSpecialityId) {
+        var isCanChange;
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '/MCPS/IsCanChangeToSelectedSpeciality',
+            async: false,
+            data: { enrollerId: enrollerId, selectedSpecialityId: selectedSpecialityId, previousSpecialityId: previousSpecialityId },
+            success: function (data) {
+                isCanChange = data;
+            }
+        });
+        return isCanChange;
+    }
+    // End MCPS Subject change function
+
+    $("#mcpsWizard").steps({
+        onStepChanging: function (event, currentIndex, newIndex) {
+            $('#mcpsRegistration').validate().settings.ignore = ":disabled,:hidden";
+
+            if (currentIndex > newIndex)
+                return true;
+
+            return $('#mcpsRegistration').valid();
+        },
+        onFinishing: function () {
+            $('#mcpsRegistration').validate().settings.ignore = ":disabled,:hidden";
+            return $('#mcpsRegistration').valid();
+        },
+        onFinished: function () {
+            var trainingRecord = new Array();
+            $.each($('.mcpsRecord'), function (key) {
+                var single = {
+                    SpecialityId: $(".mcpsRecord:eq(" + key + ") td select[name='SpecialityName']").val(),
+                    TrainingInstituteId: $(".mcpsRecord:eq(" + key + ") td select[name='TrainingInstituteId']").val(),
+                    StartDate: $(".mcpsRecord:eq(" + key + ") td input[name='StartDate']").val(),
+                    EndDate: $(".mcpsRecord:eq(" + key + ") td input[name='EndDate']").val()
+                };
+                trainingRecord[key] = single;
+            });
+
+            var model = {
+                BMDCRegistrationNumber: $('#BMDCRegistrationNumber').val(),
+                SpecialityId: $('#SpecialityId').val(),
+                EnrollerId: $('#EnrollerId').val(),
+                TrainingRecord: trainingRecord,
+                MoneyReceiptNumber: $('#MoneyReceiptNumber').val(),
+                Amount: $('#Amount').val(),
+                BankId: $('#BankId').val(),
+                MoneyReceiptUrl: $('#MoneyReceiptUrl').val()
+            };
+
+            $.ajax({
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                url: '/MCPS/Register',
+                data: JSON.stringify(model),
+                success: function () {
+                    //$('#mcpsRegistration').submit();
+                }
+            });
+
+            return $('#mcpsRegistration').valid();
+        }
+    });
+
+    $('#Amount').val('');
+
+    $('#mcpsTrainingSlot').on('focus', '#StartDate', function () {
+        $(this).datepicker({
+            format: 'dd/mm/yyyy',
+            "setDate": new Date(),
+            "autoclose": true,
+            minDate: Date.parse("1900-01-01"),
+            maxDate: Date.parse("2100-01-01"),
+            yearRange: "1900:+nn"
+        });
+    });
+
+    $('#mcpsTrainingSlot').on('focus', '#EndDate', function () {
+        $(this).datepicker({
+            format: 'dd/mm/yyyy',
+            "setDate": new Date(),
+            "autoclose": true,
+            minDate: Date.parse("1900-01-01"),
+            maxDate: Date.parse("2100-01-01"),
+            yearRange: "1900:+nn"
+        });
+    });
+
+    $('#addSlot').click(function () {
+        var trainingSlot = $('#mcpsTrainingSlot');
+        var row = $('tr:eq(0)', trainingSlot).clone();
+        $('#StartDate', row).val('');
+        $('#EndDate', row).val('');
+        trainingSlot.append(row);
+    });
+
+    $('#removeSlot').click(function () {
+        $.each($('.trainingSlot'), function () {
+            if ($(this).prop('checked'))
+                $(this).parent().parent().remove();
+        });
+    });
+
+    $("#termsAndConditions").change(function () {
+        if (this.checked) {
+            $('#ConfirmationErrorTermsAndConditions').addClass('hide');
+        }
+    });
+
+})(jQuery);
